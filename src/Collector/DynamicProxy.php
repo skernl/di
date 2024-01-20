@@ -10,7 +10,7 @@ use ReflectionException;
  * @DynamicProxy
  * @\Skernl\Di\Collector\DynamicProxy
  */
-trait DynamicProxy
+final class DynamicProxy
 {
     /**
      * @var string $className
@@ -24,7 +24,6 @@ trait DynamicProxy
 
     /**
      * @param string $className
-     * @throws ReflectionException
      */
     public function __construct(string $className)
     {

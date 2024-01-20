@@ -300,7 +300,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "skernl/contract": 20
+        "skernl/contract": 20,
+        "swoole/ide-helper": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
