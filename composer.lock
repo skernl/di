@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f09968e10e733982c36647dccfeda6d2",
+    "content-hash": "fea04369398c25a302aaa0e02f515f3c",
     "packages": [
         {
             "name": "psr/cache",
@@ -261,12 +261,47 @@
                 "source": "https://github.com/skernl/contract/tree/main"
             },
             "time": "2023-12-14T03:06:02+00:00"
+        },
+        {
+            "name": "swoole/ide-helper",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/swoole/ide-helper.git",
+                "reference": "5cedc4fb1c2e9566ac5df1c6a2fe150847e0ef0b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/swoole/ide-helper/zipball/5cedc4fb1c2e9566ac5df1c6a2fe150847e0ef0b",
+                "reference": "5cedc4fb1c2e9566ac5df1c6a2fe150847e0ef0b",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Team Swoole",
+                    "email": "team@swoole.com"
+                }
+            ],
+            "description": "IDE help files for Swoole.",
+            "support": {
+                "issues": "https://github.com/swoole/ide-helper/issues",
+                "source": "https://github.com/swoole/ide-helper/tree/master"
+            },
+            "time": "2024-01-12T01:41:29+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "skernl/contract": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

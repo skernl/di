@@ -1,11 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Skernl\Di;
+namespace Skernl\Di\Source;
 
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Skernl\Contract\ContainerInterface;
+use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
 use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Exception\NotFoundException;
 
@@ -14,16 +15,17 @@ use Skernl\Di\Exception\NotFoundException;
  * @Container
  * @\Skernl\Di\Container
  */
-final class Container implements ContainerInterface
+final class Container implements SkernlContainerInterface
 {
-    /**
-     * @var DefinitionSource $definitionSource
-     */
-    protected DefinitionSource $definitionSource;
+    protected array $resolvedEntries;
 
     public function __construct()
     {
-        $this->definitionSource = DefinitionSource::getInstance();
+        $this->resolvedEntries = [
+            self::class => $this,
+            SkernlContainerInterface::class => $this,
+            PsrContainerInterface::class => $this,
+        ];
     }
 
     /**
@@ -38,11 +40,15 @@ final class Container implements ContainerInterface
      */
     public function get(string $id): mixed
     {
+        if (true === array_key_exists($id, $this->resolvedEntries)) {
+            return $this->resolvedEntries [$id];
+        }
+
         if (false === $this->has($id)) {
             throw new NotFoundException("No entry or class found for $id");
         }
 
-        return $this->definitionSource->getDefinition($id);
+        return DefinitionSource::createInstance()->getDefinition($id);
     }
 
     /**
@@ -58,6 +64,10 @@ final class Container implements ContainerInterface
      */
     public function has(string $id): bool
     {
-        return $this->definitionSource->has($id);
+        if (true === array_key_exists($id, $this->resolvedEntries)) {
+            return true;
+        }
+
+        return DefinitionSource::createInstance()->has($id);
     }
 }

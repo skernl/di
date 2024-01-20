@@ -21,17 +21,26 @@ class DefinitionSource
      */
     private array $source = [];
 
-    private function __construct()
+    /**
+     * @param array $dependencies
+     */
+    private function __construct(array $dependencies)
     {
+        foreach ($dependencies as $identifier => $definition) {
+            if (is_string($definition) && class_exists($definition)) {
+                $this->source [$identifier] = $definition;
+            }
+        }
     }
 
     /**
+     * @param array $dependencies
      * @return object
      */
-    static public function getInstance(): object
+    static public function createInstance(array $dependencies = []): object
     {
         null === DefinitionSource::$object
-        && DefinitionSource::$object = new DefinitionSource;
+        && DefinitionSource::$object = new DefinitionSource($dependencies);
 
         return DefinitionSource::$object;
     }
@@ -48,6 +57,7 @@ class DefinitionSource
      * @param string $name
      * @return mixed
      * @throws NotFoundException
+     * @noinspection PhpUnhandledExceptionInspection
      */
     public function getDefinition(string $name): mixed
     {
@@ -55,7 +65,9 @@ class DefinitionSource
             throw new NotFoundException("No entry or class found for $name");
         }
 
-        return $this->source [$name];
+        return $this->make($name);
+
+//        return $this->source [$name] ??= $this->make($name);
     }
 
     /**
@@ -77,11 +89,25 @@ class DefinitionSource
         $this->source [$name] = $definition;
     }
 
+
+    /**
+     * @param string $name
+     * @return $name $name
+     */
+    public function make(string $name)
+    {
+        $className = $this->source [$name];
+
+//        return new DynamicProxy($className);
+
+        return new $className ();
+    }
+
     /**
      * @return DefinitionSource
      */
     public function __clone()
     {
-        return static::getInstance();
+        return static::createInstance();
     }
 }
