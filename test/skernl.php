@@ -15,13 +15,3 @@ $loaders = reset($loaders);
 $classes = array_values($loaders->getClassMap());
 
 var_dump($classes);
-
-
-foreach ($classes as $value) {
-    require_once $value;
-    //    Skernl\Di\Collector\ReflectionManager::reflectClass($value);
-}
-
-//\Skernl\Di\Collector\ReflectionManager::getAll();
-
-var_dump(microtime(true));
