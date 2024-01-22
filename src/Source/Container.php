@@ -17,7 +17,7 @@ final class Container implements SkernlContainerInterface
 {
     protected array $resolvedEntries;
 
-    public function __construct(protected ContainerSource $containerSource)
+    public function __construct(protected ContainerDispatch $containerSource)
     {
         $this->resolvedEntries = [
             self::class => $this,
@@ -50,7 +50,7 @@ final class Container implements SkernlContainerInterface
             );
         }
 
-        return $this->containerSource->get($id);
+        return $this->resolvedEntries [$id] = $this->containerSource->get($id);
     }
 
     /**

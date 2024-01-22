@@ -8,51 +8,99 @@
 //$container = new \Skernl\Di\Source\Container;
 
 
-class TestPerformance
-{
-    public static array $storageRoom = [];
+//#[Attribute(Attribute::TARGET_ALL)]
+//class A
+//{
+//    public function __construct(
+////        public int|array|object $classes = [],
+////        public int|array $classes2 = [],
+//        public int $classes3 = 1,
+//    )
+//    {
+//    }
+//
+//    public function action()
+//    {
+//
+//    }
+//}
+//
+//$reflect = new ReflectionClass(A::class);
+//
+//$reflectArr = $reflect->getAttributes();
+//
+////foreach ($reflectArr as $value) {
+////    var_dump($value->getName());
+////    var_dump($value->getArguments());
+////    var_dump($value->getTarget());
+////}
+//
+//$reflectM = $reflect->getMethods();
+//
+//var_dump($reflect->isInstantiable());
+//
+//$obj = $reflect->newInstanceWithoutConstructor();
+//
+//
+//var_dump(get_class_methods($obj));
 
-    public static function testArrayKeyExists($key)
-    {
-        if (array_key_exists($key, self::$storageRoom)) {
-            return self::$storageRoom[$key];
-        }
 
-        return self::$storageRoom[$key] = 2;
-    }
+//foreach ($reflectM as $value) {
+//    if ('__construct' === $value->getName()) {
+//        $params = $value->getParameters();
+//        foreach ($params as $param) {
+//            var_dump($param->getType()->getName());
+////            var_dump(array_values($param->getType()->getTypes()));
+////            $types = $param->getType()->getTypes();
+////            foreach ($types as $type) {
+////                var_dump($type->getName());
+////            }
+//        }
+//    }
+//}
 
-    public static function testNullCoalescingAssign($key)
-    {
-        if (isset(self::$storageRoom [$key])) {
-            return self::$storageRoom[$key];
-        }
-
-        return self::$storageRoom[$key] = 2;
-    }
-}
 
 class A
 {
-    public int $a = 2;
+    static public $a = [];
+
+    static public function set($key, $value)
+    {
+        self::$a [$key] = $value;
+    }
 }
 
-// 测试 array_key_exists 版本
-$start = microtime(true);
-for ($i = 0; $i < 1000000; $i++) {
-    TestPerformance::$storageRoom = [];
-    TestPerformance::testArrayKeyExists("property");
+
+class B extends A
+{
+//    static public $a = [];
+
+    static public function seta($key, $value)
+    {
+        self::$a [$key] = $value;
+    }
+
+    static public function setb($key, $value)
+    {
+        static::$a [$key] = $value;
+    }
+
+    static public function geta()
+    {
+        return self::$a;
+    }
+
+    static public function getb()
+    {
+        return static::$a;
+    }
 }
-$end = microtime(true);
-echo "Array Key Exists Test Time: " . ($end - $start) . " seconds\n";
-
-// 重置 storageRoom
 
 
-// 测试 null coalescing assign 版本
-$start = microtime(true);
-for ($i = 0; $i < 1000000; $i++) {
-    TestPerformance::$storageRoom = [];
-    TestPerformance::testNullCoalescingAssign("property");
-}
-$end = microtime(true);
-echo "Null Coalescing Assign Test Time: " . ($end - $start) . " seconds\n";
+A::set('a', '123a');
+B::seta('b', '123b');
+B::setb('c', '123c');
+
+var_dump(A::$a);
+var_dump(B::geta());
+var_dump(B::getb());

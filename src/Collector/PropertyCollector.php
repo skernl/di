@@ -7,6 +7,6 @@ namespace Skernl\Di\Collector;
  * @PropertyCollector
  * @\Skernl\Di\Collector\PropertyCollector
  */
-class PropertyCollector
+class PropertyCollector extends AbstractMetadataCollector
 {
 }

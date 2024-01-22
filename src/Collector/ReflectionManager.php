@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Skernl\Di\Source;
+namespace Skernl\Di\Collector;
 
 use InvalidArgumentException;
 use ReflectionClass;
@@ -13,12 +13,12 @@ use ReflectionProperty;
  * @ReflectionManager
  * @\Skernl\Di\Source\ReflectionManager
  */
-class ReflectionManager
+class ReflectionManager extends AbstractMetadataCollector
 {
     /**
-     * @var array $storageRoom
+     * @var string $keyName
      */
-    static private array $storageRoom = [];
+    protected static string $keyName = 'classes';
 
     /**
      * @param string $className
@@ -26,8 +26,8 @@ class ReflectionManager
      */
     static public function reflectClass(string $className): ReflectionClass
     {
-        if (isset(self::$storageRoom [$className])) {
-            return self::$storageRoom [$className];
+        if (self::notNullHas($className)) {
+            return self::notNullGet($className);
         }
         if (class_exists($className)
             || interface_exists($className)
@@ -42,15 +42,14 @@ class ReflectionManager
     /**
      * @param string $className
      * @param string $methodName
-     * @return mixed
+     * @return ReflectionMethod
      * @throws ReflectionException
-     * @throws InvalidArgumentException
      */
     static public function reflectMethod(string $className, string $methodName): ReflectionMethod
     {
         $key = $className . '::' . $methodName . ':method';
-        if (isset(self::$storageRoom [$key])) {
-            return self::$storageRoom [$key];
+        if (self::notNullHas($key)) {
+            return self::notNullGet($key);
         }
         return self::$storageRoom [$key]
             = self::reflectClass($className)->getMethod($methodName);
@@ -76,8 +75,8 @@ class ReflectionManager
     static public function reflectProperty(string $className, string $propertyName): ReflectionProperty
     {
         $key = $className . '::' . $propertyName . ':property';
-        if (isset(self::$storageRoom [$propertyName])) {
-            return self::$storageRoom [$key];
+        if (self::notNullHas($key)) {
+            return self::notNullGet($key);
         }
         return self::$storageRoom [$key]
             = self::reflectClass($className)->getProperty($propertyName);
@@ -90,44 +89,6 @@ class ReflectionManager
     static public function getPropertyDefaultValue(ReflectionProperty $property): mixed
     {
         return $property->getDefaultValue();
-    }
-
-    /**
-     * @param string $className
-     * @param string $methodName
-     * @return array
-     * @throws ReflectionException
-     * @throws InvalidArgumentException
-     */
-    static public function getMethodParameters(string $className, string $methodName): array
-    {
-        $key = $className . '::' . $methodName . ':parameter';
-        if (isset(self::$storageRoom [$key])) {
-            return self::$storageRoom [$key];
-        }
-        $parameters = self::reflectMethod($className, $methodName)->getParameters();
-        $defaultParameters = [];
-        foreach ($parameters as $parameter) {
-            $type = $parameter->getType()->getName();
-            $defaultParameters [] = match ($type) {
-                'bool', 'int', 'float', 'string', 'array' => function () use ($type, $parameter) {
-                    $param = [
-                        'type' => $type,
-                        'name' => $parameter->getName(),
-                        'allowsNull' => $parameter->allowsNull(),
-                    ];
-                    $parameter->isDefaultValueAvailable()
-                    && $param ['defaultValue'] = $parameter->getDefaultValue();
-                    return $param;
-                },
-                default => [
-                    'type' => 'object',
-                    'name' => $parameter->getName(),
-                    'allowsNull' => $parameter->allowsNull(),
-                ]
-            };
-        }
-        return self::$storageRoom [$key] = $defaultParameters;
     }
 
     /**
