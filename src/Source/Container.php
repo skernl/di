@@ -7,6 +7,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
 use Skernl\Di\Exception\NotFoundException;
+use Skernl\Di\Resolver\ResolverDispatcher;
 
 /**
  * This is an interface in the di container that is allowed to be called externally.
@@ -17,7 +18,7 @@ final class Container implements SkernlContainerInterface
 {
     protected array $resolvedEntries;
 
-    public function __construct(protected ContainerDispatch $containerSource)
+    public function __construct(protected ResolverDispatcher $containerSource)
     {
         $this->resolvedEntries = [
             self::class => $this,

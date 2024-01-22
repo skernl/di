@@ -55,6 +55,11 @@ class ReflectionManager extends AbstractMetadataCollector
             = self::reflectClass($className)->getMethod($methodName);
     }
 
+    static public function getAll()
+    {
+        var_dump(self::$storageRoom);
+    }
+
 //    /**
 //     * @param string $className
 //     * @return array
