@@ -5,6 +5,7 @@ namespace Skernl\Di\Collector;
 
 use InvalidArgumentException;
 use ReflectionException;
+use Skernl\Di\Source\ReflectionManager;
 
 /**
  * @DynamicProxy
