@@ -29,11 +29,7 @@ class ReflectionManager extends AbstractMetadataCollector
         if (self::notNullHas($className)) {
             return self::notNullGet($className);
         }
-        if (class_exists($className)
-            || interface_exists($className)
-            || trait_exists($className)
-            || enum_exists($className)
-        ) {
+        if (class_exists($className) || interface_exists($className)) {
             return self::$storageRoom [$className] = new ReflectionClass($className);
         }
         self::invalidArgumentException($className);
@@ -54,21 +50,6 @@ class ReflectionManager extends AbstractMetadataCollector
         return self::$storageRoom [$key]
             = self::reflectClass($className)->getMethod($methodName);
     }
-
-    static public function getAll()
-    {
-        var_dump(self::$storageRoom);
-    }
-
-//    /**
-//     * @param string $className
-//     * @return array
-//     * @throws InvalidArgumentException
-//     */
-//    static public function reflectMethods(string $className): array
-//    {
-//        return self::reflectClass($className)->getMethods();
-//    }
 
     /**
      * @param string $className

@@ -15,8 +15,11 @@ class ResolverDispatcher
     {
     }
 
+    /**
+     * @param string $name
+     */
     public function resolve(string $name)
     {
-        $this->container->get();
+        return 1;
     }
 }

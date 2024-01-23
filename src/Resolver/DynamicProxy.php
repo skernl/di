@@ -8,6 +8,8 @@ use ReflectionException;
 use Skernl\Di\Collector\ReflectionManager;
 
 /**
+ * When I wrote this,only God and I understood what I was doing.
+ *
  * @DynamicProxy
  * @\Skernl\Di\Collector\DynamicProxy
  */

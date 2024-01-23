@@ -6,20 +6,31 @@ namespace Skernl\Di\Source;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
+use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Exception\NotFoundException;
 use Skernl\Di\Resolver\ResolverDispatcher;
 
 /**
+ * 这是di容器中允许从外部调用的接口。
  * This is an interface in the di container that is allowed to be called externally.
  * @Container
  * @\Skernl\Di\Container
  */
 final class Container implements SkernlContainerInterface
 {
+    /**
+     * @var array $resolvedEntries
+     */
     protected array $resolvedEntries;
 
-    public function __construct(protected ResolverDispatcher $containerSource)
+    /**
+     * @var ResolverDispatcher $resolverDispatcher
+     */
+    protected ResolverDispatcher $resolverDispatcher;
+
+    public function __construct(protected DefinitionSource $definitionSource)
     {
+        $this->resolverDispatcher = new resolverDispatcher($this);
         $this->resolvedEntries = [
             self::class => $this,
             SkernlContainerInterface::class => $this,
@@ -51,7 +62,7 @@ final class Container implements SkernlContainerInterface
             );
         }
 
-        return $this->resolvedEntries [$id] = $this->containerSource->get($id);
+        return $this->resolvedEntries [$id] = $this->resolverDispatcher->resolve($id);
     }
 
     /**
@@ -71,6 +82,6 @@ final class Container implements SkernlContainerInterface
             return true;
         }
 
-        return DefinitionSource::createInstance()->has($id);
+        return $this->definitionSource->hasDefinition($id);
     }
 }

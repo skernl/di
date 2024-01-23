@@ -19,7 +19,7 @@ class MethodCollector extends AbstractMetadataCollector
      * @return array
      * @throws ReflectionException
      */
-    static public function invoke(string $className, string $methodName): array
+    static public function getParameters(string $className, string $methodName): array
     {
         $key = $className . '::' . $methodName;
         if (static::has($key)) {
@@ -48,9 +48,9 @@ class MethodCollector extends AbstractMetadataCollector
             } else {
                 $param ['type'] = 'object';
             }
-            $defaultParameters [] = $param;
+            $defaultParameters [] = &$param;
         }
-        return self::$storageRoom [$key] = $defaultParameters;
+        return self::$storageRoom [$key] = &$defaultParameters;
     }
 
 }

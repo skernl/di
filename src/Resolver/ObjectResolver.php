@@ -20,9 +20,4 @@ class ObjectResolver
     {
         return $this->createInstance($name);
     }
-
-    private function createInstance(string $name)
-    {
-        $parameters = [];
-    }
 }
