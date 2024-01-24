@@ -1,23 +1,44 @@
 #! /usr/bin/php
 <?php
 
-//define("BASE_PATH", dirname(__DIR__));
-//
-//require dirname(__DIR__) . '/vendor/autoload.php';
-//
-////$container = new \Skernl\Di\Source\Container;
-//var_dump(microtime(true));
-//$loaders = Composer\Autoload\ClassLoader::getRegisteredLoaders();
-//
-//$loaders = reset($loaders);
-//
-//$classes = array_values($loaders->getClassMap());
-//
-//var_dump($classes);
+use Skernl\Contract\ContainerInterface;
 
-//var_dump((new \Skernl\Di\Definition\ObjectDefinition('a', 'b'))->isClassExist());
+define("BASE_PATH", dirname(__DIR__));
 
+require dirname(__DIR__) . '/vendor/autoload.php';
 
-$a = [];
+$loaders = Composer\Autoload\ClassLoader::getRegisteredLoaders();
+$loaders = reset($loaders);
+$classes = array_values($loaders->getClassMap());
 
-var_dump($a [2]);
+class ActionA
+{
+    public function indexA()
+    {
+        return 456;
+    }
+}
+
+class IndexController
+{
+    public function __construct(protected ActionA $actionA)
+    {
+    }
+
+    public function index()
+    {
+        return $this->actionA->indexA();
+    }
+}
+
+$config = [
+    IndexController::class => IndexController::class,
+];
+
+$definitionSource = new Skernl\Di\Definition\DefinitionSource($config);
+
+$container = new Skernl\Di\Source\Container($definitionSource);
+
+$object = $container->get(ContainerInterface::class)->get(IndexController::class);
+
+var_dump($object->index());

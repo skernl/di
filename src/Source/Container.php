@@ -62,7 +62,9 @@ final class Container implements SkernlContainerInterface
             );
         }
 
-        return $this->resolvedEntries [$id] = $this->resolverDispatcher->resolve($id);
+        return $this->resolvedEntries [$id] = $this->resolverDispatcher->resolve(
+            $this->definitionSource->getDefinition($id)
+        );
     }
 
     /**

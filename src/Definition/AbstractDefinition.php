@@ -6,7 +6,7 @@ namespace Skernl\Di\Definition;
 use InvalidArgumentException;
 use Skernl\Di\Collector\ReflectionManager;
 
-abstract class AbstractDefinition
+abstract class AbstractDefinition implements DefinitionInterface
 {
     /**
      * @var string $name
@@ -24,31 +24,52 @@ abstract class AbstractDefinition
     protected bool $classExist;
 
     /**
-     * @var bool $instantiable
+     * @var bool $isInstantiable
      */
-    protected bool $instantiable;
+    protected bool $isInstantiable;
+
+    public function __construct()
+    {
+    }
 
     /**
-     * @param string $className
+     * @param string $name
+     * @param string|null $className
      * @return void
      */
-    public function __init(string $className): void
+    public function init(string $name, null|string $className = null): void
     {
-        $this->className = $className;
-        $this->instantiable = class_exists($className) || interface_exists($className);
-        $this->instantiable = $this->instantiable
-            ?: ReflectionManager::reflectClass($this->className)->isInstantiable();
+        $this->name = $name;
+        $this->className = $className ?? $name;
+        $this->classExist = class_exists($className) || interface_exists($className);
     }
 
     /**
-     * @return object
+     * @return string
      */
-    static public function __singleton(): object
+    public function getName(): string
     {
-        if (isset(static::$instance)) {
-            static::$instance = new static;
-        }
-
-        return static::$instance;
+        return $this->name;
     }
+
+    /**
+     * @return string
+     */
+    public function getClassName(): string
+    {
+        return $this->className;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isClassExist(): bool
+    {
+        return $this->classExist;
+    }
+
+    /**
+     * @return bool
+     */
+    abstract public function isInstantiable(): bool;
 }

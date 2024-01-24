@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
+use Skernl\Di\Collector\ReflectionManager;
+
 /**
  * @DefinitionSource
  * @\Skernl\Di\Source\DefinitionSource
@@ -15,11 +17,16 @@ class DefinitionSource
     protected array $source;
 
     /**
-     * @param DefinitionFactory $definitionFactory
+     * @var DefinitionFactory $definitionFactory
+     */
+    protected DefinitionFactory $definitionFactory;
+
+    /**
      * @param array $source
      */
-    public function __construct(protected DefinitionFactory $definitionFactory, array $source)
+    public function __construct(array $source)
     {
+        $this->definitionFactory = new DefinitionFactory;
         $this->source = $this->normalizeSource($source);
     }
 
@@ -29,7 +36,7 @@ class DefinitionSource
      */
     public function hasDefinition(string $name): bool
     {
-        return array_key_exists($name, $this->source);
+        return isset($name, $this->source);
     }
 
     /**
@@ -41,7 +48,9 @@ class DefinitionSource
         if (isset($name, $this->source)) {
             return $this->source[$name];
         }
-        return null;
+        $this->source[$name] ??= $this->autofill($name);
+
+        return $this->source[$name];
     }
 
     /**
@@ -52,29 +61,75 @@ class DefinitionSource
     {
         $definitions = [];
         foreach ($source as $identifier => $definition) {
-            $definitions [$identifier] = $this->normalizeDefinition($definition);
+            $normalizeDefinition = $this->normalizeDefinition($identifier, $definition);
+            is_null($normalizeDefinition) || $definitions [$identifier] = $normalizeDefinition;
         }
         return $definitions;
     }
 
     /**
+     * @param string $identifier
      * @param array|callable|string $definition
-     * @return ObjectDefinition|null
+     * @return DefinitionInterface|null
      */
-    public function normalizeDefinition(array|callable|string $definition): null|ObjectDefinition
+    public function normalizeDefinition(string $identifier, array|callable|string $definition): ObjectDefinition|null
     {
+//        if (is_callable($identifier)) {
+//        }
         if (is_string($definition) && class_exists($definition)) {
-            return $this->autofill($this->definitionFactory->objectDefinition($definition));
+            if ($this->isSingleton($definition)) {
+                return $this->autofill(
+                    $identifier,
+                    $this->definitionFactory->singletonDefinition($identifier, $definition)
+                );
+            }
+            if ($this->isFactory($definition)) {
+                return $this->autofill(
+                    $identifier,
+                    $this->definitionFactory->singletonDefinition($identifier, $definition)
+                );
+            }
+            return $this->autofill(
+                $identifier,
+                $this->definitionFactory->objectDefinition($identifier, $definition)
+            );
         }
         return null;
     }
 
     /**
-     * @param ObjectDefinition $definition
-     * @return ObjectDefinition
+     * @param string $identifier
+     * @param DefinitionInterface|null $definition
+     * @return DefinitionInterface|null
      */
-    protected function autofill(ObjectDefinition $definition): ObjectDefinition
+    protected function autofill(string $identifier, null|DefinitionInterface $definition = null): null|DefinitionInterface
     {
         return $definition;
+    }
+
+    /**
+     * @param string $className
+     * @return bool
+     */
+    protected function isSingleton(string $className): bool
+    {
+        if (method_exists($className, '__singleton')) {
+            $reflectMethod = ReflectionManager::reflectMethod($className, '__singleton');
+            return !$reflectMethod->isAbstract() && $reflectMethod->isPublic();
+        }
+        return false;
+    }
+
+    /**
+     * @param string $className
+     * @return bool
+     */
+    protected function isFactory(string $className): bool
+    {
+        if (method_exists($className, '__factory')) {
+            $reflectMethod = ReflectionManager::reflectMethod($className, '__factory');
+            return !$reflectMethod->isAbstract() && $reflectMethod->isPublic();
+        }
+        return false;
     }
 }

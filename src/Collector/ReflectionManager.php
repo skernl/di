@@ -32,14 +32,16 @@ class ReflectionManager extends AbstractMetadataCollector
         if (class_exists($className) || interface_exists($className)) {
             return self::$storageRoom [$className] = new ReflectionClass($className);
         }
-        self::invalidArgumentException($className);
+        throw new InvalidArgumentException(
+            sprintf('Class %d not exist', $className)
+        );
     }
 
     /**
      * @param string $className
      * @param string $methodName
      * @return ReflectionMethod
-     * @throws ReflectionException
+     * @throws InvalidArgumentException
      */
     static public function reflectMethod(string $className, string $methodName): ReflectionMethod
     {
@@ -47,8 +49,21 @@ class ReflectionManager extends AbstractMetadataCollector
         if (self::notNullHas($key)) {
             return self::notNullGet($key);
         }
-        return self::$storageRoom [$key]
-            = self::reflectClass($className)->getMethod($methodName);
+        if (self::reflectClass($className)->hasMethod($methodName)) {
+            return self::$storageRoom [$key] = self::reflectClass($className)->getMethod($methodName);
+        }
+        throw new InvalidArgumentException(
+            sprintf('Class %s does not have method %s', $className, $methodName)
+        );
+    }
+
+    /**
+     * @param string $className
+     * @return bool
+     */
+    public function isInstantiable(string $className): bool
+    {
+        return self::reflectClass($className)->isInstantiable();
     }
 
     /**

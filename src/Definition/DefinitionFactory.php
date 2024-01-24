@@ -23,33 +23,33 @@ final class DefinitionFactory
 
     public function __construct()
     {
-        isset(self::$singletonDefinition)
-        || self::$singletonDefinition = SingletonDefinition::__singleton();
-        isset(self::$objectDefinition)
-        || self::$objectDefinition = ObjectDefinition::__singleton();
     }
 
     /**
      * 约束单例模式的处理
      * @param string $name
+     * @param string|null $className
      * @return SingletonDefinition
      */
-    public function singletonDefinition(string $name): SingletonDefinition
+    public function singletonDefinition(string $name, null|string $className = null): SingletonDefinition
     {
+        isset(self::$objectDefinition) || self::$singletonDefinition = new SingletonDefinition;
         $clone = clone self::$singletonDefinition;
-        $clone->__init($name);
+        $clone->init($name, $className);
         return $clone;
     }
 
     /**
      * 约束普通类的处理
      * @param string $name
+     * @param string|null $className
      * @return ObjectDefinition
      */
-    public function objectDefinition(string $name): ObjectDefinition
+    public function objectDefinition(string $name, null|string $className = null): ObjectDefinition
     {
+        isset(self::$objectDefinition) || self::$objectDefinition = new ObjectDefinition;
         $clone = clone self::$objectDefinition;
-        $clone->__init($name);
+        $clone->init($name, $className);
         return $clone;
     }
 }

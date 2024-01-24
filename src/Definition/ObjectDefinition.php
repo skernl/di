@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
+use Skernl\Di\Collector\ReflectionManager;
+
 /**
  * @ObjectDefinition
  * @\Skernl\Di\Definition\ObjectDefinition
@@ -13,14 +15,6 @@ class ObjectDefinition extends AbstractDefinition
      * @var ObjectDefinition $instance
      */
     static protected ObjectDefinition $instance;
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
 
     /**
      * @return string
@@ -38,8 +32,15 @@ class ObjectDefinition extends AbstractDefinition
         return $this->classExist;
     }
 
+    /**
+     * @return bool
+     */
     public function isInstantiable(): bool
     {
-        return $this->instantiable;
+        if (isset($this->isInstantiable)) return $this->isInstantiable;
+        if (class_exists($this->className)) {
+            return $this->isInstantiable = ReflectionManager::reflectClass($this->className)->isInstantiable();
+        }
+        return $this->isInstantiable = false;
     }
 }
