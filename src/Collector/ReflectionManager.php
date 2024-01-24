@@ -16,11 +16,6 @@ use ReflectionProperty;
 class ReflectionManager extends AbstractMetadataCollector
 {
     /**
-     * @var string $keyName
-     */
-    protected static string $keyName = 'classes';
-
-    /**
      * @param string $className
      * @return ReflectionClass
      */
@@ -41,7 +36,7 @@ class ReflectionManager extends AbstractMetadataCollector
      * @param string $className
      * @param string $methodName
      * @return ReflectionMethod
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|ReflectionException
      */
     static public function reflectMethod(string $className, string $methodName): ReflectionMethod
     {

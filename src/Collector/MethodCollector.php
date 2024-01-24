@@ -11,8 +11,6 @@ use ReflectionException;
  */
 class MethodCollector extends AbstractMetadataCollector
 {
-    protected static string $keyName = 'classes';
-
     /**
      * @param string $className
      * @param string $methodName

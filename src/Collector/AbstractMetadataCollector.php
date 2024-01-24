@@ -15,21 +15,16 @@ abstract class AbstractMetadataCollector
     static protected array $storageRoom = [];
 
     /**
-     * @var string $key
-     */
-    static protected string $keyName;
-
-    /**
      * @param string $key
      * @param mixed|null $default
      * @return mixed
      */
     static public function get(string $key, mixed $default = null): mixed
     {
-        if (!static::has($key)) {
+        if (!self::has($key)) {
             return $default;
         }
-        return static::$storageRoom [static::$keyName] [$key];
+        return self::$storageRoom [$key];
     }
 
     /**
@@ -39,10 +34,10 @@ abstract class AbstractMetadataCollector
      */
     static public function notNullGet(string $key, mixed $default = null): mixed
     {
-        if (!static::notNullHas($key)) {
+        if (!self::notNullHas($key)) {
             return $default;
         }
-        return static::$storageRoom [static::$keyName] [$key];
+        return self::$storageRoom [$key];
     }
 
     /**
@@ -52,7 +47,7 @@ abstract class AbstractMetadataCollector
      */
     static public function set(string $key, string $value): void
     {
-        static::$storageRoom [static::$keyName] [$key] = $value;
+        self::$storageRoom [$key] = $value;
     }
 
     /**
@@ -61,7 +56,7 @@ abstract class AbstractMetadataCollector
      */
     static public function has(string $key): bool
     {
-        return array_key_exists($key, static::$storageRoom [static::$keyName]);
+        return array_key_exists($key, self::$storageRoom);
     }
 
     /**
@@ -70,6 +65,6 @@ abstract class AbstractMetadataCollector
      */
     static public function notNullHas(string $key): bool
     {
-        return isset(static::$storageRoom [static::$keyName] [$key]);
+        return isset(self::$storageRoom [$key]);
     }
 }
