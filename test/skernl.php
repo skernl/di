@@ -5,6 +5,8 @@
 
 use Skernl\Contract\ContainerInterface;
 
+var_dump(microtime(true));
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $loaders = Composer\Autoload\ClassLoader::getRegisteredLoaders();
@@ -12,12 +14,14 @@ $loaders = reset($loaders);
 $classMap = $loaders->getClassMap();
 
 /** @noinspection PhpUnhandledExceptionInspection */
-$classes = new Skernl\Di\ClassesCollectorManager($classMap);
+$manager = new Skernl\Di\ClassesManager($classMap);
 
-$definitionSource = new Skernl\Di\Definition\DefinitionSource([]);
+$indexController = $manager->getContainer()->get(\App\Controller\IndexController::class);
+//
+//var_dump($indexController->index());
 
-$container = new \Skernl\Di\Container($definitionSource);
+//var_dump((new \App\Controller\IndexController())->getDefaultValue());
+//
+//var_dump(class_exists(\App\Controller\IndexController::class));
 
-$object = $container->get(ContainerInterface::class);
-
-var_dump($object);
+var_dump(microtime(true));

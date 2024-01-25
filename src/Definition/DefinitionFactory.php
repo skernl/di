@@ -3,53 +3,99 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
+use ReflectionClass;
+use ReflectionException;
+
 /**
- * 规范化不同的类处理、极大提高处理速度
- * Standardize different class processing and greatly improve processing speed.
  * @DefinitionFactory
  * @\Skernl\Di\Definition\DefinitionFactory
  */
-final class DefinitionFactory
+class DefinitionFactory
 {
-    /**
-     * @var SingletonDefinition $objectDefinition
-     */
-    static public SingletonDefinition $singletonDefinition;
-
-    /**
-     * @var ObjectDefinition $objectDefinition
-     */
-    static public ObjectDefinition $objectDefinition;
+    private AbstractDefinition $abstractDefinition;
+    private AnonymousDefinition $anonymousDefinition;
+    private EnumDefinition $enumDefinition;
+    private FactoryDefinition $factoryDefinition;
+    private InterfaceDefinition $interfaceDefinition;
+    private ObjectDefinition $objectDefinition;
+    private ReadonlyDefinition $readonlyDefinition;
+    private TraitDefinition $traitDefinition;
 
     public function __construct()
     {
+        $this->abstractDefinition = new AbstractDefinition();
+        $this->anonymousDefinition = new AnonymousDefinition();
+        $this->enumDefinition = new EnumDefinition();
+        $this->factoryDefinition = new FactoryDefinition();
+        $this->interfaceDefinition = new InterfaceDefinition();
+        $this->objectDefinition = new ObjectDefinition();
+        $this->readonlyDefinition = new ReadonlyDefinition();
+        $this->traitDefinition = new TraitDefinition();
     }
 
     /**
-     * 约束单例模式的处理
-     * @param string $name
-     * @param string|null $className
-     * @return SingletonDefinition
+     * @param string $class
+     * @return DefinitionInterface
+     * @throws ReflectionException
      */
-    public function singletonDefinition(string $name, null|string $className = null): SingletonDefinition
+    public function autoMode(string $class)
     {
-        isset(self::$objectDefinition) || self::$singletonDefinition = new SingletonDefinition;
-        $clone = clone self::$singletonDefinition;
-        $clone->init($name, $className);
-        return $clone;
+        $reflectionClass = new ReflectionClass($class);
+        if ($reflectionClass->isAbstract()) {
+            $abstractDefinition = $this->getAbstractDefinition();
+            $abstractDefinition->init($class, $reflectionClass);
+            return $abstractDefinition;
+        } elseif ($reflectionClass->isAnonymous()) {
+            $abstractDefinition = $this->getAnonymousDefinition();
+            $abstractDefinition->init($class, $reflectionClass);
+            return $abstractDefinition;
+        } else {
+            $abstractDefinition = $this->getObjectDefinition();
+            $abstractDefinition->init($class, $reflectionClass);
+            return $abstractDefinition;
+        }
     }
 
     /**
-     * 约束普通类的处理
-     * @param string $name
-     * @param string|null $className
-     * @return ObjectDefinition
+     * @return AbstractDefinition
      */
-    public function objectDefinition(string $name, null|string $className = null): ObjectDefinition
+    private function getAbstractDefinition(): AbstractDefinition
     {
-        isset(self::$objectDefinition) || self::$objectDefinition = new ObjectDefinition;
-        $clone = clone self::$objectDefinition;
-        $clone->init($name, $className);
-        return $clone;
+        return clone $this->abstractDefinition;
+    }
+
+    private function getAnonymousDefinition(): AnonymousDefinition
+    {
+        return clone $this->anonymousDefinition;
+    }
+
+    private function getEnumDefinition(): EnumDefinition
+    {
+        return clone $this->enumDefinition;
+    }
+
+    private function getFactoryDefinition(): FactoryDefinition
+    {
+        return clone $this->factoryDefinition;
+    }
+
+    private function getInterfaceDefinition(): InterfaceDefinition
+    {
+        return clone $this->interfaceDefinition;
+    }
+
+    private function getObjectDefinition(): ObjectDefinition
+    {
+        return clone $this->objectDefinition;
+    }
+
+    private function getReadonlyDefinition(): ReadonlyDefinition
+    {
+        return clone $this->readonlyDefinition;
+    }
+
+    private function getTraitDefinition(): TraitDefinition
+    {
+        return clone $this->traitDefinition;
     }
 }

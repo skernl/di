@@ -5,19 +5,14 @@ namespace Skernl\Di\Definition;
 
 /**
  * @DefinitionInterface
- * @\Skernl\Di\Definition\DefinitionInterface
+ * @\DefinitionInterface
  */
 interface DefinitionInterface
 {
     /**
      * @return string
      */
-    public function getName(): string;
-
-    /**
-     * @return bool
-     */
-    public function isClassExist(): bool;
+    public function getClassName(): string;
 
     /**
      * @return bool

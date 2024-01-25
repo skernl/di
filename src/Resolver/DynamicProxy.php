@@ -4,8 +4,12 @@ declare(strict_types=1);
 namespace Skernl\Di\Resolver;
 
 use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
 use ReflectionException;
+use ReflectionParameter;
 use Skernl\Di\Collector\ReflectionManager;
+use Skernl\Di\Definition\DefinitionInterface;
+use Skernl\Di\Definition\ObjectDefinition;
 
 /**
  * When I wrote this,only God and I understood what I was doing.
@@ -18,21 +22,43 @@ final class DynamicProxy
     /**
      * @var string $className
      */
-    static private string $className;
+    private string $className;
 
     /**
      * @var object $instance
      */
-    static private object $instance;
+    private object $instance;
 
     /**
-     * @param string $className
-     * @throws ReflectionException
+     * @param ContainerInterface $container
+     * @param ObjectDefinition $definition
      */
-    public function __construct(string $className)
+    public function __construct(ContainerInterface $container, DefinitionInterface $definition)
     {
-        DynamicProxy::$className = $className;
-        self::$instance = ReflectionManager::reflectClass($className)->newInstance();
+        $this->className = $definition->getClassName();
+        /**
+         * @var ReflectionParameter $parameters
+         */
+        $parameters = $definition->getConstructParameters();
+        $params = [];
+        foreach ($parameters as $parameter) {
+            $params [] = $this->getDefaultValue($container, $parameter);
+        }
+        $this->instance = $definition->createInstance($params);
+    }
+
+    private function getDefaultValue(ContainerInterface $container, ReflectionParameter $parameter)
+    {
+        $type = $parameter->getType();
+        switch ($type) {
+            case 'a1':
+                return 'b1';
+            case 'a2':
+                return 'b2';
+            default:
+                $className = $type->getName();
+                return $container->get($className);
+        }
     }
 
     /**

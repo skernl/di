@@ -3,133 +3,78 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
-use Skernl\Di\Collector\ReflectionManager;
+use ReflectionException;
 
 /**
  * @DefinitionSource
- * @\Skernl\Di\Source\DefinitionSource
+ * @\Skernl\Di\Definition\DefinitionSource
  */
-class DefinitionSource
+class DefinitionSource implements DefinitionSourceInterface
 {
-    /**
-     * @var array $source
-     */
-    protected array $source;
+    protected array $source = [];
 
     /**
-     * @var DefinitionFactory $definitionFactory
+     * @param array $classMap
+     * @throws ReflectionException
      */
-    protected DefinitionFactory $definitionFactory;
-
-    /**
-     * @param array $source
-     */
-    public function __construct(array $source)
+    public function __construct(array $classMap)
     {
-        $this->definitionFactory = new DefinitionFactory;
-        $this->source = $this->normalizeSource($source);
+        $this->normalize(
+            array_keys($classMap)
+        );
+    }
+
+    public function get(string $class)
+    {
     }
 
     /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasDefinition(string $name): bool
-    {
-        return isset($name, $this->source);
-    }
-
-    /**
-     * @param string $name
+     * @param string $class
      * @return mixed
      */
-    public function getDefinition(string $name): mixed
+    public function getDefinition(string $class): DefinitionInterface
     {
-        if (isset($name, $this->source)) {
-            return $this->source[$name];
-        }
-        $this->source[$name] ??= $this->autofill($name);
-
-        return $this->source[$name];
+        return $this->source [$class];
     }
 
     /**
      * @param array $source
-     * @return array
+     * @param object|null $definitionFactory
+     * @return void
+     * @throws ReflectionException
      */
-    protected function normalizeSource(array $source): array
+    private function normalize(array $source, null|object $definitionFactory = null): void
     {
-        $definitions = [];
-        foreach ($source as $identifier => $definition) {
-            $normalizeDefinition = $this->normalizeDefinition($identifier, $definition);
-            is_null($normalizeDefinition) || $definitions [$identifier] = $normalizeDefinition;
+        if (is_null($definitionFactory)) {
+            $definitionFactory = new DefinitionFactory();
         }
-        return $definitions;
-    }
-
-    /**
-     * @param string $identifier
-     * @param array|callable|string $definition
-     * @return DefinitionInterface|null
-     */
-    public function normalizeDefinition(string $identifier, array|callable|string $definition): ObjectDefinition|null
-    {
-//        if (is_callable($identifier)) {
-//        }
-        if (is_string($definition) && class_exists($definition)) {
-            if ($this->isSingleton($definition)) {
-                return $this->autofill(
-                    $identifier,
-                    $this->definitionFactory->singletonDefinition($identifier, $definition)
-                );
-            }
-            if ($this->isFactory($definition)) {
-                return $this->autofill(
-                    $identifier,
-                    $this->definitionFactory->singletonDefinition($identifier, $definition)
-                );
-            }
-            return $this->autofill(
-                $identifier,
-                $this->definitionFactory->objectDefinition($identifier, $definition)
-            );
+        $class = array_shift($source);
+        $this->source += [
+            $class => $definitionFactory->autoMode($class)
+        ];
+        if (!empty($source)) {
+            $this->normalize($source, $definitionFactory);
         }
-        return null;
+        unset($definitionFactory);
+        $this->clean($source);
     }
 
     /**
-     * @param string $identifier
-     * @param DefinitionInterface|null $definition
-     * @return DefinitionInterface|null
+     * @param array $classMap
+     * @return void
      */
-    protected function autofill(string $identifier, null|DefinitionInterface $definition = null): null|DefinitionInterface
+    private function clean(array $classMap): void
     {
-        return $definition;
+        array_map(fn($class) => [$class, 'spl_autoload_unregister'], $classMap);
+        unset($class);
     }
 
     /**
-     * @param string $className
+     * @param string $id
      * @return bool
      */
-    protected function isSingleton(string $className): bool
+    public function hasDefinition(string $id): bool
     {
-        if (method_exists($className, '__singleton')) {
-            $reflectMethod = ReflectionManager::reflectMethod($className, '__singleton');
-            return !$reflectMethod->isAbstract() && $reflectMethod->isPublic();
-        }
-        return false;
-    }
-
-    /**
-     * @param string $className
-     * @return bool
-     */
-    protected function isFactory(string $className): bool
-    {
-        if (method_exists($className, '__factory')) {
-            $reflectMethod = ReflectionManager::reflectMethod($className, '__factory');
-            return !$reflectMethod->isAbstract() && $reflectMethod->isPublic();
-        }
-        return false;
+        return isset($this->source [$id]);
     }
 }

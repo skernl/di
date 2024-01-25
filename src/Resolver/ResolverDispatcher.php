@@ -7,7 +7,6 @@ use RuntimeException;
 use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\ObjectDefinition;
-use Skernl\Di\Definition\SingletonDefinition;
 use Skernl\Di\Exception\InvalidDefinitionException;
 
 /**
@@ -21,15 +20,10 @@ class ResolverDispatcher
      */
     private ObjectResolver $objectResolver;
 
-//    /**
-//     * @var SingletonDefinition $singletonDefinition
-//     */
-//    private SingletonResolver $Resolver;
-
     /**
      * @param ContainerInterface $container
      */
-    public function __construct(private ContainerInterface $container)
+    public function __construct(private readonly ContainerInterface $container)
     {
     }
 

@@ -7,12 +7,11 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
 use Skernl\Di\Definition\DefinitionSource;
+use Skernl\Di\Exception\InvalidDefinitionException;
 use Skernl\Di\Exception\NotFoundException;
 use Skernl\Di\Resolver\ResolverDispatcher;
 
 /**
- * 这是di容器中允许从外部调用的接口。
- * This is an interface in the di container that is allowed to be called externally.
  * @Container
  * @\Skernl\Di\Container
  */
@@ -46,6 +45,7 @@ final class Container implements SkernlContainerInterface
      * @throws ContainerExceptionInterface Error while retrieving the entry.
      *
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
+     * @throws InvalidDefinitionException
      */
     public function get(string $id): mixed
     {
@@ -62,9 +62,18 @@ final class Container implements SkernlContainerInterface
             );
         }
 
-        return $this->resolvedEntries [$id] = $this->resolverDispatcher->resolve(
-            $this->definitionSource->getDefinition($id)
-        );
+        $definition = $this->definitionSource->getDefinition($id);
+
+        if (!$this->resolverDispatcher->isResolvable($definition)) {
+            throw new InvalidDefinitionException(
+                sprintf(
+                    'Entry "%s" cannot be resolved: the class is not instantiable',
+                    $definition->getClassName()
+                )
+            );
+        }
+
+        return $this->resolvedEntries [$id] = $this->resolverDispatcher->resolve($definition);
     }
 
     /**

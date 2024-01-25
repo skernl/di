@@ -3,44 +3,36 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
-use Skernl\Di\Collector\ReflectionManager;
+use ReflectionClass;
+use ReflectionParameter;
 
 /**
  * @ObjectDefinition
  * @\Skernl\Di\Definition\ObjectDefinition
  */
-class ObjectDefinition extends AbstractDefinition
+class ObjectDefinition extends DefinitionAbstract implements DefinitionInterface
 {
-    /**
-     * @var ObjectDefinition $instance
-     */
-    static protected ObjectDefinition $instance;
-
-    /**
-     * @return string
-     */
-    public function getClassName(): string
+    public function init(string $class, ReflectionClass $reflectionClass): void
     {
-        return $this->className ?? $this->name;
+        parent::init($class, $reflectionClass);
+        $this->instantiable = $reflectionClass->isInstantiable();
+
+    }
+
+    public function createInstance(array $parameters = [])
+    {
+        return $this->reflectionClass->newInstanceArgs($parameters);
     }
 
     /**
-     * @return bool
+     * @return ReflectionParameter[]
      */
-    public function isClassExist(): bool
+    public function getConstructParameters(): array
     {
-        return $this->classExist;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInstantiable(): bool
-    {
-        if (isset($this->isInstantiable)) return $this->isInstantiable;
-        if (class_exists($this->className)) {
-            return $this->isInstantiable = ReflectionManager::reflectClass($this->className)->isInstantiable();
+        $construct = $this->reflectionClass->getConstructor();
+        if (is_null($construct)) {
+            return [];
         }
-        return $this->isInstantiable = false;
+        return $construct->getParameters();
     }
 }

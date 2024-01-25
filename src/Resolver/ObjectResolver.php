@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace Skernl\Di\Resolver;
 
 use ReflectionException;
+use ReflectionParameter;
 use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Collector\MethodCollector;
 use Skernl\Di\Collector\ReflectionManager;
 use Skernl\Di\Definition\DefinitionInterface;
+use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Definition\ObjectDefinition;
 use Skernl\Di\Exception\InvalidDefinitionException;
 
@@ -56,7 +58,7 @@ class ObjectResolver implements ResolverInterface
      * @throws InvalidDefinitionException
      * @throws ReflectionException
      */
-    private function createInstance(DefinitionInterface $objectDefinition): object
+    private function createInstance(ObjectDefinition $objectDefinition): object
     {
         if (!$objectDefinition->isInstantiable()) {
             throw new InvalidDefinitionException(
@@ -66,8 +68,6 @@ class ObjectResolver implements ResolverInterface
                 )
             );
         }
-        $className = $objectDefinition->getClassName();
-        $reflectionClass = ReflectionManager::reflectClass($className);
-        return $reflectionClass->newInstanceArgs();
+        return new DynamicProxy($this->container, $objectDefinition);
     }
 }

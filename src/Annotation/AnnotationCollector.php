@@ -3,18 +3,16 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Annotation;
 
-use Skernl\Di\Collector\AbstractMetadataCollector;
-
 /**
  * @AnnotationCollector
  * @\Skernl\Di\Annotation\AnnotationCollector
  */
-class AnnotationCollector extends AbstractMetadataCollector
+abstract class AnnotationCollector
 {
     /**
      * @var array $retailer
      */
-    static protected array $storageRoom = [];
+    protected array $storageRoom = [];
 
     /**
      * @param string $class
@@ -22,13 +20,13 @@ class AnnotationCollector extends AbstractMetadataCollector
      * @param mixed $value
      * @return void
      */
-    static public function collectClass(
+    public function collectClass(
         string $class,
         string $annotation,
         mixed  $value
     ): void
     {
-        static::$storageRoom [$class] [0] [$annotation] = $value;
+        $this->storageRoom [$class] [0] [$annotation] = $value;
     }
 
     /**
@@ -38,14 +36,14 @@ class AnnotationCollector extends AbstractMetadataCollector
      * @param mixed $value
      * @return void
      */
-    static public function collectMethod(
+    public function collectMethod(
         string $class,
         string $method,
         string $annotation,
         mixed  $value
     ): void
     {
-        static::$storageRoom [$class] [1] [$method] [$annotation] = $value;
+        $this->storageRoom [$class] [1] [$method] [$annotation] = $value;
     }
 
     /**
@@ -55,13 +53,13 @@ class AnnotationCollector extends AbstractMetadataCollector
      * @param mixed $value
      * @return void
      */
-    static public function collectProperty(
+    public function collectProperty(
         string $class,
         string $property,
         string $annotation,
         mixed  $value
     ): void
     {
-        static::$storageRoom [$class] [2] [$property] [$annotation] = $value;
+        $this->storageRoom [$class] [2] [$property] [$annotation] = $value;
     }
 }
