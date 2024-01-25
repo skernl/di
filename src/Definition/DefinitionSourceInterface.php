@@ -14,4 +14,10 @@ interface DefinitionSourceInterface
      * @return DefinitionInterface
      */
     public function getDefinition(string $class): DefinitionInterface;
+
+    /**
+     * @param string $class
+     * @return bool
+     */
+    public function hasDefinition(string $class): bool;
 }

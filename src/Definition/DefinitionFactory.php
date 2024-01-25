@@ -5,6 +5,7 @@ namespace Skernl\Di\Definition;
 
 use ReflectionClass;
 use ReflectionException;
+use Skernl\Di\Annotation\ClassAnnotationCollector;
 
 /**
  * @DefinitionFactory
@@ -13,7 +14,6 @@ use ReflectionException;
 class DefinitionFactory
 {
     private AbstractDefinition $abstractDefinition;
-    private AnonymousDefinition $anonymousDefinition;
     private EnumDefinition $enumDefinition;
     private FactoryDefinition $factoryDefinition;
     private InterfaceDefinition $interfaceDefinition;
@@ -21,14 +21,13 @@ class DefinitionFactory
     private ReadonlyDefinition $readonlyDefinition;
     private TraitDefinition $traitDefinition;
 
-    public function __construct()
+    public function __construct(ClassAnnotationCollector $annotationCollector)
     {
         $this->abstractDefinition = new AbstractDefinition();
-        $this->anonymousDefinition = new AnonymousDefinition();
         $this->enumDefinition = new EnumDefinition();
         $this->factoryDefinition = new FactoryDefinition();
         $this->interfaceDefinition = new InterfaceDefinition();
-        $this->objectDefinition = new ObjectDefinition();
+        $this->objectDefinition = new ObjectDefinition($annotationCollector);
         $this->readonlyDefinition = new ReadonlyDefinition();
         $this->traitDefinition = new TraitDefinition();
     }
@@ -38,15 +37,11 @@ class DefinitionFactory
      * @return DefinitionInterface
      * @throws ReflectionException
      */
-    public function autoMode(string $class)
+    public function autoMode(string $class): DefinitionInterface
     {
         $reflectionClass = new ReflectionClass($class);
         if ($reflectionClass->isAbstract()) {
             $abstractDefinition = $this->getAbstractDefinition();
-            $abstractDefinition->init($class, $reflectionClass);
-            return $abstractDefinition;
-        } elseif ($reflectionClass->isAnonymous()) {
-            $abstractDefinition = $this->getAnonymousDefinition();
             $abstractDefinition->init($class, $reflectionClass);
             return $abstractDefinition;
         } else {
@@ -62,11 +57,6 @@ class DefinitionFactory
     private function getAbstractDefinition(): AbstractDefinition
     {
         return clone $this->abstractDefinition;
-    }
-
-    private function getAnonymousDefinition(): AnonymousDefinition
-    {
-        return clone $this->anonymousDefinition;
     }
 
     private function getEnumDefinition(): EnumDefinition

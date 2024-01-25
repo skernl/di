@@ -3,17 +3,11 @@ declare(strict_types=1);
 
 namespace Skernl\Di;
 
-use Psr\Container\{
-    ContainerExceptionInterface,
-    ContainerInterface,
-    NotFoundExceptionInterface,
-};
-use ReflectionClass;
+use Psr\Container\{ContainerInterface,};
 use ReflectionException;
 use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Definition\DefinitionSourceInterface;
 use Skernl\Di\Definition\ObjectDefinition;
-use Skernl\Di\Exception\ClassNotFoundException;
 
 /**
  * @ClassesCollectorManager
@@ -22,19 +16,9 @@ use Skernl\Di\Exception\ClassNotFoundException;
 class ClassesManager
 {
     /**
-     * @var array $instance
-     */
-    private array $instance = [];
-
-    /**
      * @var DefinitionSourceInterface $definitionSource
      */
     private DefinitionSourceInterface $definitionSource;
-
-    /**
-     * @var ContainerInterface $container
-     */
-    protected ContainerInterface $container;
 
     /**
      * @param array $classMap
@@ -43,6 +27,20 @@ class ClassesManager
     public function __construct(array $classMap)
     {
         $this->initialization($classMap);
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        /**
+         * @var ObjectDefinition $definition
+         */
+        $definition = $this->definitionSource->getDefinition(Container::class);
+        return $definition->createInstance($definition->getReflectClass(), [
+            $this->definitionSource
+        ]);
     }
 
     /**
@@ -56,34 +54,41 @@ class ClassesManager
             include_once $file;
         }
         $this->definitionSource = new DefinitionSource($classMap);
+        $this->clean($classMap);
     }
 
     /**
-     * @param string $class
-     * @return ReflectionClass
-     * @throws ClassNotFoundException
+     * @param array $classMap
+     * @return void
      */
-    public function get(string $class): ReflectionClass
+    private function clean(array $classMap): void
     {
-        if (isset($this->instance [$class])) {
-            return $this->instance [$class];
-        }
-        throw new ClassNotFoundException(
-            sprintf('Class %s does not exist', $class)
-        );
+        array_map(fn($class) => [$class, 'spl_autoload_unregister'], $classMap);
+        $this->heavyLoad();
+        spl_autoload_register([$this->getContainer(), 'get']);
     }
 
     /**
-     * @return ContainerInterface
+     * @return void
      */
-    public function getContainer(): ContainerInterface
+    private function heavyLoad()
     {
-        /**
-         * @var ObjectDefinition $definition
-         */
-        $definition = $this->definitionSource->getDefinition(Container::class);
-        return $definition->createInstance([
-            $this->definitionSource
-        ]);
+    }
+
+    /**
+     * @return void
+     * @noinspection PhpUndefinedFunctionInspection
+     */
+    public function __invoke(): void
+    {
+        runkit7_function_remove('class_exists');
+
+//        if (!function_exists('class_exists')) {
+//            function class_exists(string $class, bool $autoload = true): bool
+//            {
+//                return false;
+////                return (new Container)->hasDefinition($class);
+//            }
+//        }
     }
 }

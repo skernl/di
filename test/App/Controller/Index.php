@@ -7,7 +7,7 @@ namespace App\Controller;
  * @Index
  * @\App\Controller\Index
  */
-class Index
+class Index extends ControllerAbstract
 {
     public function action()
     {

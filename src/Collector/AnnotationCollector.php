@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Skernl\Di\Collector;
 
 /**
- * @AnnotationCollector
- * @\Skernl\Di\Collector\AnnotationCollector
+ * @ClassAnnotationCollector
+ * @\Skernl\Di\Collector\ClassAnnotationCollector
  */
 class AnnotationCollector
 {

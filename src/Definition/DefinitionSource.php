@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Skernl\Di\Definition;
 
 use ReflectionException;
+use Skernl\Di\Annotation\ClassAnnotationCollector;
 
 /**
  * @DefinitionSource
@@ -11,7 +12,15 @@ use ReflectionException;
  */
 class DefinitionSource implements DefinitionSourceInterface
 {
-    protected array $source = [];
+    /**
+     * @var array $source
+     */
+    private array $source = [];
+
+    /**
+     * @var ClassAnnotationCollector $annotationCollector
+     */
+    private ClassAnnotationCollector $annotationCollector;
 
     /**
      * @param array $classMap
@@ -19,13 +28,10 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function __construct(array $classMap)
     {
+        $this->annotationCollector = new ClassAnnotationCollector();
         $this->normalize(
             array_keys($classMap)
         );
-    }
-
-    public function get(string $class)
-    {
     }
 
     /**
@@ -38,6 +44,15 @@ class DefinitionSource implements DefinitionSourceInterface
     }
 
     /**
+     * @param string $class
+     * @return bool
+     */
+    public function hasDefinition(string $class): bool
+    {
+        return isset($this->source [$class]);
+    }
+
+    /**
      * @param array $source
      * @param object|null $definitionFactory
      * @return void
@@ -46,7 +61,7 @@ class DefinitionSource implements DefinitionSourceInterface
     private function normalize(array $source, null|object $definitionFactory = null): void
     {
         if (is_null($definitionFactory)) {
-            $definitionFactory = new DefinitionFactory();
+            $definitionFactory = new DefinitionFactory($this->annotationCollector);
         }
         $class = array_shift($source);
         $this->source += [
@@ -55,26 +70,5 @@ class DefinitionSource implements DefinitionSourceInterface
         if (!empty($source)) {
             $this->normalize($source, $definitionFactory);
         }
-        unset($definitionFactory);
-        $this->clean($source);
-    }
-
-    /**
-     * @param array $classMap
-     * @return void
-     */
-    private function clean(array $classMap): void
-    {
-        array_map(fn($class) => [$class, 'spl_autoload_unregister'], $classMap);
-        unset($class);
-    }
-
-    /**
-     * @param string $id
-     * @return bool
-     */
-    public function hasDefinition(string $id): bool
-    {
-        return isset($this->source [$id]);
     }
 }

@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Resolver;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use ReflectionAttribute;
 use ReflectionException;
-use ReflectionParameter;
 use Skernl\Contract\ContainerInterface;
-use Skernl\Di\Collector\MethodCollector;
-use Skernl\Di\Collector\ReflectionManager;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Definition\ObjectDefinition;
@@ -37,7 +37,7 @@ class ObjectResolver implements ResolverInterface
         throw new InvalidDefinitionException(
             sprintf(
                 'Entry "%s" cannot be resolved: the class is not instanceof ObjectDefinition',
-                $definition->getName()
+                $definition->getClassName()
             )
         );
     }
@@ -57,6 +57,8 @@ class ObjectResolver implements ResolverInterface
      * @return ObjectDefinition
      * @throws InvalidDefinitionException
      * @throws ReflectionException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     private function createInstance(ObjectDefinition $objectDefinition): object
     {
@@ -64,10 +66,52 @@ class ObjectResolver implements ResolverInterface
             throw new InvalidDefinitionException(
                 sprintf(
                     'Entry "%s" cannot be resolved: the class doesnt instantiable',
-                    $objectDefinition->getName()
+                    $objectDefinition->getClassName()
                 )
             );
         }
-        return new DynamicProxy($this->container, $objectDefinition);
+
+        $reflectClass = $objectDefinition->getReflectClass();
+        $propertyInjects = $objectDefinition->getAnnotationProperties()->getInjects();
+        $reflectClassObject = $reflectClass->newInstanceWithoutConstructor();
+        /**
+         * @var ReflectionAttribute $property
+         */
+        foreach ($propertyInjects as $propertyName => $property) {
+//            $attributes = $property->getArguments();
+//            var_dump($propertyInject);
+//            foreach ($propertyInject as $propertyName => $property) {
+//                var_dump($propertyName);
+//                $type = $property ['type'];
+//                var_dump($property);
+            $pro = $reflectClass->getProperty($propertyName);
+            $pro->setAccessible(true);
+            $pro->setValue(
+                $reflectClassObject,
+                $this->container->get($property ['type'])
+            );
+//            }
+//            foreach ($property as $annotation => $annotationParameters) {
+////                $name = $attribute->getName();
+////                $propertyValue = $reflectClass->getProperty($name)->getName();
+//
+//            }
+        }
+
+//        $parameters = $objectDefinition->getConstructParameters();
+//        $params = [];
+//
+//        foreach () {}
+//
+//        foreach ($parameters as $parameter) {
+//            $params [] = $this->getDefaultParameter($parameter);
+//        }
+        return new DynamicProxy($objectDefinition->createInstance($reflectClass));
+    }
+
+    private function getDefaultParameter(\ReflectionParameter $parameter)
+    {
+        $type = $parameter->getType();
+        return $this->container->get($type->getName());
     }
 }

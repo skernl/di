@@ -4,15 +4,35 @@ declare(strict_types=1);
 namespace Skernl\Di\Annotation;
 
 /**
- * @AnnotationCollector
- * @\Skernl\Di\Annotation\AnnotationCollector
+ * @ClassAnnotationCollector
+ * @\Skernl\Di\Annotation\ClassAnnotationCollector
  */
-abstract class AnnotationCollector
+class ClassAnnotationCollector
 {
     /**
      * @var array $retailer
      */
     protected array $storageRoom = [];
+
+    /**
+     * @param string $class
+     * @param string $property
+     * @return mixed
+     */
+    public function getProperty(string $class, string $property): mixed
+    {
+        return $this->storageRoom [$class] [2] [$property];
+    }
+
+    /**
+     * @param string $class
+     * @return mixed
+     */
+    public function getAllProperty(string $class): mixed
+    {
+        return $this->storageRoom [$class] [2];
+    }
+
 
     /**
      * @param string $class
