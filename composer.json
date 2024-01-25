@@ -17,6 +17,7 @@
     "require": {
         "php": ">=8.3",
         "skernl/contract": "dev-main",
-        "swoole/ide-helper": "dev-master"
+        "swoole/ide-helper": "dev-master",
+        "ext-runkit7": "*"
     }
 }
