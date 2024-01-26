@@ -12,10 +12,10 @@ use Skernl\Di\Annotation\Inject;
 ]
 class IndexController
 {
-    #[Inject]
-    protected Index $index;
+//    #[Inject]
+//    protected Index $index;
 
-    public function __construct()
+    public function __construct(protected Index $index)
     {
     }
 

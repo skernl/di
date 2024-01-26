@@ -81,15 +81,15 @@ class ObjectDefinition extends DefinitionAbstract implements DefinitionInterface
         return $this->reflectionClass;
     }
 
-    public function createInstance(ReflectionClass $reflectionClass, array $parameters = [])
-    {
-        return $reflectionClass->newInstanceArgs($parameters);
-    }
-
-//    public function createInstance($reflectionClass, array $parameters = [])
+//    public function createInstance(ReflectionClass $reflectionClass, array $parameters = [])
 //    {
-//        return $this->reflectionClass->newInstanceArgs($parameters);
+//        return $reflectionClass->newInstanceArgs($parameters);
 //    }
+
+    public function createInstance(array $parameters = [])
+    {
+        return $this->reflectionClass->newInstanceArgs($parameters);
+    }
 
     /**
      * @return array|PropertyAnnotationCollector

@@ -38,7 +38,7 @@ class ClassesManager
          * @var ObjectDefinition $definition
          */
         $definition = $this->definitionSource->getDefinition(Container::class);
-        return $definition->createInstance($definition->getReflectClass(), [
+        return $definition->createInstance([
             $this->definitionSource
         ]);
     }
@@ -64,31 +64,6 @@ class ClassesManager
     private function clean(array $classMap): void
     {
         array_map(fn($class) => [$class, 'spl_autoload_unregister'], $classMap);
-        $this->heavyLoad();
         spl_autoload_register([$this->getContainer(), 'get']);
-    }
-
-    /**
-     * @return void
-     */
-    private function heavyLoad()
-    {
-    }
-
-    /**
-     * @return void
-     * @noinspection PhpUndefinedFunctionInspection
-     */
-    public function __invoke(): void
-    {
-        runkit7_function_remove('class_exists');
-
-//        if (!function_exists('class_exists')) {
-//            function class_exists(string $class, bool $autoload = true): bool
-//            {
-//                return false;
-////                return (new Container)->hasDefinition($class);
-//            }
-//        }
     }
 }

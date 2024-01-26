@@ -3,13 +3,12 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Resolver;
 
+use Closure;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionAttribute;
-use ReflectionException;
+use ReflectionParameter;
 use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Definition\DefinitionInterface;
-use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Definition\ObjectDefinition;
 use Skernl\Di\Exception\InvalidDefinitionException;
 
@@ -26,10 +25,12 @@ class ObjectResolver implements ResolverInterface
     /**
      * @param DefinitionInterface $definition
      * @param array $parameters
-     * @return ObjectDefinition
+     * @return Closure
+     * @throws ContainerExceptionInterface
      * @throws InvalidDefinitionException
+     * @throws NotFoundExceptionInterface
      */
-    public function resolve(DefinitionInterface $definition, array $parameters = []): mixed
+    public function resolve(DefinitionInterface $definition, array $parameters = []): Closure
     {
         if ($definition instanceof ObjectDefinition) {
             return $this->createInstance($definition);
@@ -54,13 +55,12 @@ class ObjectResolver implements ResolverInterface
 
     /**
      * @param ObjectDefinition $objectDefinition
-     * @return ObjectDefinition
-     * @throws InvalidDefinitionException
-     * @throws ReflectionException
+     * @return Closure
      * @throws ContainerExceptionInterface
+     * @throws InvalidDefinitionException
      * @throws NotFoundExceptionInterface
      */
-    private function createInstance(ObjectDefinition $objectDefinition): object
+    private function createInstance(ObjectDefinition $objectDefinition): Closure
     {
         if (!$objectDefinition->isInstantiable()) {
             throw new InvalidDefinitionException(
@@ -71,45 +71,37 @@ class ObjectResolver implements ResolverInterface
             );
         }
 
-        $reflectClass = $objectDefinition->getReflectClass();
-        $propertyInjects = $objectDefinition->getAnnotationProperties()->getInjects();
-        $reflectClassObject = $reflectClass->newInstanceWithoutConstructor();
-        /**
-         * @var ReflectionAttribute $property
-         */
-        foreach ($propertyInjects as $propertyName => $property) {
-//            $attributes = $property->getArguments();
-//            var_dump($propertyInject);
-//            foreach ($propertyInject as $propertyName => $property) {
-//                var_dump($propertyName);
-//                $type = $property ['type'];
-//                var_dump($property);
-            $pro = $reflectClass->getProperty($propertyName);
-            $pro->setAccessible(true);
-            $pro->setValue(
-                $reflectClassObject,
-                $this->container->get($property ['type'])
-            );
-//            }
-//            foreach ($property as $annotation => $annotationParameters) {
-////                $name = $attribute->getName();
-////                $propertyValue = $reflectClass->getProperty($name)->getName();
-//
-//            }
+        $params = [];
+        foreach ($objectDefinition->getConstructParameters() as $parameter) {
+            $params [] = $this->getDefaultParameter($parameter);
         }
 
-//        $parameters = $objectDefinition->getConstructParameters();
-//        $params = [];
-//
-//        foreach () {}
-//
-//        foreach ($parameters as $parameter) {
-//            $params [] = $this->getDefaultParameter($parameter);
-//        }
-        return new DynamicProxy($objectDefinition->createInstance($reflectClass));
+        $class = $objectDefinition->getClassName();
+
+        $instance = new $class(... $params);
+
+        /**
+         * @var DynamicProxy|Closure $classObject
+         */
+        $classObject = eval(<<<EOF
+            return new class () extends {$objectDefinition->getClassName()} {
+                use DynamicProxy;
+            };
+        EOF);
+        $classObject->__initialization($instance);
+        /**
+         * @var Closure $classObject
+         */
+        return $classObject;
     }
 
-    private function getDefaultParameter(\ReflectionParameter $parameter)
+    /**
+     * @param ReflectionParameter $parameter
+     * @return object
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    private function getDefaultParameter(ReflectionParameter $parameter): object
     {
         $type = $parameter->getType();
         return $this->container->get($type->getName());

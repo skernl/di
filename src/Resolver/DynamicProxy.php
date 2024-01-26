@@ -13,16 +13,26 @@ use Skernl\Di\Contract\ProxyInterface;
  * @DynamicProxy
  * @\Skernl\Di\Collector\DynamicProxy
  */
-final class DynamicProxy implements ProxyInterface
+trait DynamicProxy
 {
     /**
      * @var object $instance
      */
-    static protected object $instance;
+    static private object $instance;
 
-    public function __construct(object $instance)
+    static private bool $isInstantiable = false;
+
+    /**
+     * @param object $instance
+     * @return mixed
+     */
+    public function __initialization(object $instance): mixed
     {
+        if (self::$isInstantiable) {
+            return $this->__call('__initialization', [$instance]);
+        }
         self::$instance = $instance;
+        return $this;
     }
 
     /**
@@ -32,7 +42,7 @@ final class DynamicProxy implements ProxyInterface
      */
     public function __call(string $name, array $arguments)
     {
-        return call_user_func_array([self::$instance, $name], array_values($arguments));
+        return self::$instance->{$name}(... $arguments);
     }
 
     /**
