@@ -2,11 +2,16 @@
     "name": "skernl/di",
     "version": "v0.0.3",
     "type": "library",
+    "keywords": [
+        "php",
+        "swoole",
+        "framework",
+        "skernl"
+    ],
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Skernl\\Di\\": "src/",
-            "App\\": "test/App/"
+            "Skernl\\Di\\": "src/"
         }
     },
     "authors": [
