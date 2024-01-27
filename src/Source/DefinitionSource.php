@@ -26,7 +26,7 @@ class DefinitionSource implements DefinitionSourceInterface
      * @param array $classMap
      * @throws ReflectionException
      */
-    public function __construct(array $classMap)
+    public function __construct()
     {
         $this->annotationCollector = new ClassAnnotationCollector();
         $this->normalize(
@@ -36,9 +36,10 @@ class DefinitionSource implements DefinitionSourceInterface
 
     /**
      * @param string $class
+     * @param array $parameters
      * @return mixed
      */
-    public function getDefinition(string $class): DefinitionInterface
+    public function getDefinition(string $class, array $parameters = []): DefinitionInterface
     {
         return $this->source [$class];
     }
@@ -63,10 +64,14 @@ class DefinitionSource implements DefinitionSourceInterface
         if (is_null($definitionFactory)) {
             $definitionFactory = new DefinitionFactory($this->annotationCollector);
         }
+
         $class = array_shift($source);
-        $this->source += [
-            $class => $definitionFactory->autoMode($class)
-        ];
+        if (!interface_exists($class) && !trait_exists($class)) {
+            $this->source += [
+                $class => $definitionFactory->autoMode($class)
+            ];
+        }
+
         if (!empty($source)) {
             $this->normalize($source, $definitionFactory);
         }

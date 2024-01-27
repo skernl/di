@@ -13,13 +13,12 @@ abstract class DefinitionAbstract
     protected bool $instantiable = false;
 
     /**
-     * @param string $class
      * @param ReflectionClass $reflectionClass
      * @return void
      */
-    public function init(string $class, ReflectionClass $reflectionClass): void
+    public function init(ReflectionClass $reflectionClass): void
     {
-        $this->class = $class;
+        $this->class = $reflectionClass->getName();
         $this->reflectionClass = $reflectionClass;
     }
 

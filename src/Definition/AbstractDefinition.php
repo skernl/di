@@ -18,8 +18,8 @@ class AbstractDefinition extends DefinitionAbstract implements DefinitionInterfa
      * @param ReflectionClass $reflectionClass
      * @return void
      */
-    public function init(string $class, ReflectionClass $reflectionClass): void
+    public function init(ReflectionClass $reflectionClass): void
     {
-        parent::init($class, $reflectionClass);
+        parent::init($reflectionClass);
     }
 }

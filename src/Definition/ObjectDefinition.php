@@ -21,9 +21,9 @@ class ObjectDefinition extends DefinitionAbstract implements DefinitionInterface
     {
     }
 
-    public function init(string $class, ReflectionClass $reflectionClass): void
+    public function init(ReflectionClass $reflectionClass): void
     {
-        parent::init($class, $reflectionClass);
+        parent::init($reflectionClass);
         $this->instantiable = $reflectionClass->isInstantiable();
         $this->setCollect();
     }
@@ -57,20 +57,6 @@ class ObjectDefinition extends DefinitionAbstract implements DefinitionInterface
         $propertyAnnotationCollector = new PropertyAnnotationCollector;
         $propertyAnnotationCollector->init($properties);
         $this->propertyInject = $propertyAnnotationCollector;
-//        foreach ($properties as $property) {
-//            $this->propertyInject [] = [
-//                $property->getName() => new PropertyAnnotationCollector()
-//            ];
-//            //            $propertyAttributes = $property->getAttributes();
-////            foreach ($propertyAttributes as $attribute) {
-////                $this->annotationCollector->collectProperty(
-////                    $this->class,
-////                    $property->getName(),
-////                    $attribute->getName(),
-////                    $attribute->getArguments()
-////                );
-////            }
-//        }
     }
 
     /**

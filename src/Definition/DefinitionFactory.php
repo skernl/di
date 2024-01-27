@@ -33,21 +33,19 @@ class DefinitionFactory
     }
 
     /**
-     * @param string $class
+     * @param ReflectionClass $reflectionClass
      * @return DefinitionInterface
-     * @throws ReflectionException
      */
-    public function autoMode(string $class): DefinitionInterface
+    public function autoMode(ReflectionClass $reflectionClass): DefinitionInterface
     {
-        $reflectionClass = new ReflectionClass($class);
         if ($reflectionClass->isAbstract()) {
             $abstractDefinition = $this->getAbstractDefinition();
-            $abstractDefinition->init($class, $reflectionClass);
+            $abstractDefinition->init($reflectionClass);
             return $abstractDefinition;
         } else {
-            $abstractDefinition = $this->getObjectDefinition();
-            $abstractDefinition->init($class, $reflectionClass);
-            return $abstractDefinition;
+            $objectDefinition = $this->getObjectDefinition();
+            $objectDefinition->init($reflectionClass);
+            return $objectDefinition;
         }
     }
 

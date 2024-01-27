@@ -18,13 +18,16 @@
         {
             "name": "wheakerd",
             "email": "wheakerd@qq.com"
+        },
+        {
+            "name": "wheakerd",
+            "email": "wheakerd@gmail.com"
         }
     ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=8.3",
         "skernl/contract": "dev-main",
-        "swoole/ide-helper": "dev-master",
-        "ext-runkit7": "*"
+        "swoole/ide-helper": "dev-master"
     }
 }

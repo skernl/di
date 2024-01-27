@@ -49,6 +49,7 @@ final class Container implements SkernlContainerInterface
      */
     public function get(string $id): mixed
     {
+        var_dump($id);
         if (array_key_exists($id, $this->resolvedEntries)) {
             return $this->resolvedEntries [$id];
         }
@@ -56,7 +57,7 @@ final class Container implements SkernlContainerInterface
         if (!$this->has($id)) {
             throw new NotFoundException(
                 sprintf(
-                    "\033[31mNo entry or class found for %d\033[0m\n",
+                    "\033[31mNo entry or class found for %s\033[0m\n",
                     $id
                 )
             );
