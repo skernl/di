@@ -5,6 +5,7 @@ namespace Skernl\Di\Source;
 
 use Composer\Autoload\ClassLoader;
 use ReflectionClass;
+use ReflectionException;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\EnumDefinition;
 use Skernl\Di\Definition\InterfaceDefinition;
@@ -65,9 +66,7 @@ class SourceManager
                 new ReflectionClass($class)
             );
         } elseif (interface_exists($class)) {
-            $this->source [$class] = new InterfaceDefinition(
-                new ReflectionClass($class)
-            );
+            $this->source [$class] = new InterfaceDefinition($class);
         } elseif (trait_exists($class)) {
             $this->source [$class] = new TraitDefinition(
                 new ReflectionClass($class)

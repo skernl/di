@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Skernl\Di\Definition;
 
 use ReflectionClass;
+use ReflectionException;
 use Skernl\Contract\ContainerInterface;
 
 /**
@@ -13,15 +14,22 @@ use Skernl\Contract\ContainerInterface;
 class InterfaceDefinition implements DefinitionInterface
 {
     /**
+     * @var ReflectionClass $reflectionClass
+     */
+    private readonly ReflectionClass $reflectionClass;
+
+    /**
      * @var bool $instantiable
      */
     private bool $instantiable = false;
 
     /**
-     * @param ReflectionClass $reflectionClass
+     * @param string $class
+     * @throws ReflectionException
      */
-    public function __construct(private readonly ReflectionClass $reflectionClass)
+    public function __construct(string $class)
     {
+        $this->reflectionClass = new ReflectionClass($class);
     }
 
     public function isInstantiable()

@@ -54,7 +54,7 @@ class Container implements SkernlContainerInterface
      */
     public function get(string $id): mixed
     {
-        if (array_key_exists($id, $this->resolvedEntries)) {
+        if (isset($this->resolvedEntries [$id])) {
             return $this->resolvedEntries [$id];
         }
 
