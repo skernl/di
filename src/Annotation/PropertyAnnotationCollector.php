@@ -6,8 +6,8 @@ namespace Skernl\Di\Annotation;
 use ReflectionProperty;
 
 /**
- * @ClassAnnotationCollector
- * @\Skernl\Di\Annotation\ClassAnnotationCollector
+ * @AnnotationCollector
+ * @\Skernl\Di\Annotation\AnnotationCollector
  */
 class PropertyAnnotationCollector
 {

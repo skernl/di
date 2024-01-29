@@ -13,6 +13,23 @@ class MethodCollector extends AbstractMetadataCollector
 {
     static private string $id = 'method';
 
+    static public function collect(
+        string $class,
+        string $annotation,
+        mixed  $value
+    ): void
+    {
+        self::$storageRoom [self::$class] [$class] [$annotation] = $value;
+    }
+
+    static public function list(null|string $annotation = null): array
+    {
+        if (null === $annotation) {
+            return self::$storageRoom [self::$class];
+        }
+        return self::$storageRoom [self::$class] [$annotation] ?: [];
+    }
+
     static public function set(string $key, string $value): void
     {
         self::$storageRoom [self::$id] = '';

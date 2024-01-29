@@ -5,7 +5,6 @@ namespace Skernl\Di\Definition;
 
 use ReflectionClass;
 use ReflectionException;
-use Skernl\Contract\ContainerInterface;
 
 /**
  * @InterfaceDefinition

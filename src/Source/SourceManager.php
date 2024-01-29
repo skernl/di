@@ -6,6 +6,9 @@ namespace Skernl\Di\Source;
 use Composer\Autoload\ClassLoader;
 use ReflectionClass;
 use ReflectionException;
+use Skernl\Context\ApplicationContext;
+use Skernl\Contract\ContainerInterface;
+use Skernl\Di\Container;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\EnumDefinition;
 use Skernl\Di\Definition\InterfaceDefinition;
@@ -24,9 +27,15 @@ class SourceManager
     private array $source = [];
 
     /**
-     * @param ClassLoader $classLoader
+     * @var ContainerInterface $container
      */
-    public function __construct(private readonly ClassLoader $classLoader)
+    private ContainerInterface $container;
+
+    /**
+     * @param ClassLoader $classLoader
+     * @throws ReflectionException
+     */
+    public function __construct(private ClassLoader $classLoader)
     {
         $classMap = $classLoader->getClassMap();
         $this->normalize(array_keys($classMap));
@@ -53,36 +62,46 @@ class SourceManager
     /**
      * @param array $source
      * @return void
+     * @throws ReflectionException
      */
     private function normalize(array $source = []): void
     {
+
         $class = array_shift($source);
-        if (class_exists($class)) {
-            $this->source [$class] = new ObjectDefinition(
-                new ReflectionClass($class)
-            );
-        } elseif (enum_exists($class)) {
-            $this->source [$class] = new EnumDefinition(
-                new ReflectionClass($class)
-            );
-        } elseif (interface_exists($class)) {
-            $this->source [$class] = new InterfaceDefinition($class);
-        } elseif (trait_exists($class)) {
-            $this->source [$class] = new TraitDefinition(
-                new ReflectionClass($class)
-            );
+
+        if (class_exists($class) || enum_exists($class) || interface_exists($class) || trait_exists($class)) {
+            $this->source [$class] = new ReflectionClass($class);
         }
+
+//        if (class_exists($class)) {
+//            $this->source [$class] = new ObjectDefinition(
+//                new ReflectionClass($class),
+//                $this->getContainer()
+//            );
+//        } elseif (enum_exists($class)) {
+//            $this->source [$class] = new EnumDefinition(
+//                new ReflectionClass($class)
+//            );
+//        } elseif (interface_exists($class)) {
+//            $this->source [$class] = new InterfaceDefinition($class);
+//        } elseif (trait_exists($class)) {
+//            $this->source [$class] = new TraitDefinition(
+//                new ReflectionClass($class)
+//            );
+//        }
+
         empty($source) || $this->normalize($source);
     }
 
     /**
-     * @return DefinitionSource
+     * @return void
      */
-    public function __invoke(): DefinitionSource
+    public function __invoke(): void
     {
-        $definitionSource = new DefinitionSource($this);
-//        $this->classLoader->unregister();
-//        unset($this->classLoader);
-        return $definitionSource;
+        new ApplicationContext($this->container);
+//        $definitionSource = new DefinitionSource($this);
+        $this->classLoader->unregister();
+        unset($this->classLoader);
+//        return $definitionSource;
     }
 }

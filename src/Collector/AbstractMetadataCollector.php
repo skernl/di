@@ -17,17 +17,7 @@ abstract class AbstractMetadataCollector
     /**
      * @var string $class
      */
-    static protected string $class = 'class';
-
-    /**
-     * @var string $method
-     */
-    static protected string $method = 'method';
-
-    /**
-     * @var string $property
-     */
-    static protected string $property = 'property';
+    static protected string $id;
 
     /**
      * @param string $key
@@ -39,7 +29,7 @@ abstract class AbstractMetadataCollector
         if (!self::has($key)) {
             return $default;
         }
-        return self::$storageRoom [$key];
+        return self::$storageRoom [self::$id] [$key];
     }
 
     /**
@@ -52,7 +42,7 @@ abstract class AbstractMetadataCollector
         if (!self::notNullHas($key)) {
             return $default;
         }
-        return self::$storageRoom [$key];
+        return self::$storageRoom [self::$id] [$key];
     }
 
     /**
@@ -62,7 +52,7 @@ abstract class AbstractMetadataCollector
      */
     static public function set(string $key, string $value): void
     {
-        self::$storageRoom [$key] = $value;
+        self::$storageRoom [self::$id] [$key] = $value;
     }
 
     /**
@@ -71,7 +61,7 @@ abstract class AbstractMetadataCollector
      */
     static public function has(string $key): bool
     {
-        return array_key_exists($key, self::$storageRoom);
+        return array_key_exists($key, self::$storageRoom [self::$id]);
     }
 
     /**
@@ -80,6 +70,6 @@ abstract class AbstractMetadataCollector
      */
     static public function notNullHas(string $key): bool
     {
-        return isset(self::$storageRoom [$key]);
+        return isset(self::$storageRoom [self::$id]  [$key]);
     }
 }

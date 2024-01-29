@@ -6,13 +6,13 @@ namespace Skernl\Di\Annotation;
 use Attribute;
 
 /**
- * @ConfigProvider
- * @\Skernl\Di\Annotation\ConfigProvider
+ * @Mount
+ * @\Skernl\Di\Annotation\Mount
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-class ConfigProvider
+class Mount
 {
-    public function __construct(public $trigger = false)
+    public function __construct()
     {
     }
 }

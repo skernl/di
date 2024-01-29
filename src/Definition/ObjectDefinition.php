@@ -5,6 +5,7 @@ namespace Skernl\Di\Definition;
 
 use ReflectionAttribute;
 use ReflectionClass;
+use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Collector\ClassCollector;
 
 /**
@@ -20,8 +21,9 @@ class ObjectDefinition implements DefinitionInterface
 
     /**
      * @param ReflectionClass $reflectionClass
+     * @param ContainerInterface $container
      */
-    public function __construct(private readonly ReflectionClass $reflectionClass)
+    public function __construct(private readonly ReflectionClass $reflectionClass, ContainerInterface $container)
     {
         $this->collect();
     }
@@ -56,10 +58,17 @@ class ObjectDefinition implements DefinitionInterface
     {
         $attributes = $this->reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
+            $this->
+            var_dump($attribute->getName());
             $arguments = $attribute->getArguments();
+            var_dump($arguments);
             ClassCollector::collectClass(
                 $this->getClassName(), $arguments
             );
+        }
+        if (!empty($attributes)) {
+
+            die;
         }
     }
 
