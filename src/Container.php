@@ -4,34 +4,39 @@ declare(strict_types=1);
 namespace Skernl\Di;
 
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
-use Skernl\Di\Definition\DefinitionSource;
 use Skernl\Di\Exception\InvalidDefinitionException;
 use Skernl\Di\Exception\NotFoundException;
 use Skernl\Di\Resolver\ResolverDispatcher;
+use Skernl\Di\Source\DefinitionSource;
 
 /**
  * @Container
  * @\Skernl\Di\Container
  */
-final class Container implements SkernlContainerInterface
+class Container implements SkernlContainerInterface
 {
     /**
      * @var array $resolvedEntries
      */
-    protected array $resolvedEntries;
+    private array $resolvedEntries;
 
     /**
      * @var ResolverDispatcher $resolverDispatcher
      */
-    protected ResolverDispatcher $resolverDispatcher;
+    private ResolverDispatcher $resolverDispatcher;
 
+    /**
+     * @param DefinitionSource $definitionSource
+     */
     public function __construct(protected DefinitionSource $definitionSource)
     {
         $this->resolverDispatcher = new resolverDispatcher($this);
         $this->resolvedEntries = [
             self::class => $this,
+            PsrContainerInterface::class => $this,
             SkernlContainerInterface::class => $this,
         ];
     }
@@ -49,7 +54,6 @@ final class Container implements SkernlContainerInterface
      */
     public function get(string $id): mixed
     {
-        var_dump($id);
         if (array_key_exists($id, $this->resolvedEntries)) {
             return $this->resolvedEntries [$id];
         }
@@ -90,7 +94,7 @@ final class Container implements SkernlContainerInterface
      */
     public function has(string $id): bool
     {
-        if (array_key_exists($id, $this->resolvedEntries)) {
+        if (isset($this->resolvedEntries [$id])) {
             return true;
         }
 

@@ -9,13 +9,13 @@ namespace Skernl\Di\Definition;
  */
 interface DefinitionInterface
 {
-    /**
-     * @return string
-     */
-    public function getClassName(): string;
-
-    /**
-     * @return bool
-     */
-    public function isInstantiable(): bool;
+//    /**
+//     * @return string
+//     */
+//    public function getClassName(): string;
+//
+//    /**
+//     * @return bool
+//     */
+//    public function isInstantiable(): bool;
 }

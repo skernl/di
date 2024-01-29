@@ -11,9 +11,9 @@ interface DefinitionSourceInterface
 {
     /**
      * @param string $class
-     * @return DefinitionInterface
+     * @return DefinitionInterface|null
      */
-    public function getDefinition(string $class): DefinitionInterface;
+    public function getDefinition(string $class): null|DefinitionInterface;
 
     /**
      * @param string $class

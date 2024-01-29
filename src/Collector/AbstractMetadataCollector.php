@@ -15,6 +15,21 @@ abstract class AbstractMetadataCollector
     static protected array $storageRoom = [];
 
     /**
+     * @var string $class
+     */
+    static protected string $class = 'class';
+
+    /**
+     * @var string $method
+     */
+    static protected string $method = 'method';
+
+    /**
+     * @var string $property
+     */
+    static protected string $property = 'property';
+
+    /**
      * @param string $key
      * @param mixed|null $default
      * @return mixed

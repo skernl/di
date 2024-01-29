@@ -11,6 +11,13 @@ use ReflectionException;
  */
 class MethodCollector extends AbstractMetadataCollector
 {
+    static private string $id = 'method';
+
+    static public function set(string $key, string $value): void
+    {
+        self::$storageRoom [self::$id] = '';
+    }
+
     /**
      * @param string $className
      * @param string $methodName

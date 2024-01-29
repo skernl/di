@@ -6,6 +6,7 @@ namespace Skernl\Di\Resolver;
 use RuntimeException;
 use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Definition\DefinitionInterface;
+use Skernl\Di\Definition\InterfaceDefinition;
 use Skernl\Di\Definition\ObjectDefinition;
 use Skernl\Di\Exception\InvalidDefinitionException;
 
@@ -44,6 +45,11 @@ class ResolverDispatcher
      */
     public function resolve(DefinitionInterface $definition, array $parameters = []): mixed
     {
+        if ($definition instanceof ObjectDefinition) {
+            return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
+        } elseif ($definition instanceof InterfaceDefinition) {
+            return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
+        }
         return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
     }
 

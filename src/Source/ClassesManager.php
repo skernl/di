@@ -1,13 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Skernl\Di;
+namespace Skernl\Di\Source;
 
 use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
 use ReflectionException;
 use Skernl\Di\Definition\{
-    DefinitionSource,
     DefinitionSourceInterface,
     ObjectDefinition,
 };

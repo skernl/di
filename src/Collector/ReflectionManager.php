@@ -25,7 +25,7 @@ class ReflectionManager extends AbstractMetadataCollector
             return self::notNullGet($className);
         }
         if (class_exists($className) || interface_exists($className)) {
-            return self::$storageRoom [$className] = new ReflectionClass($className);
+            return self::$storageRoom [self::$class] [$className] = new ReflectionClass($className);
         }
         throw new InvalidArgumentException(
             sprintf('Class %d not exist', $className)
@@ -40,12 +40,12 @@ class ReflectionManager extends AbstractMetadataCollector
      */
     static public function reflectMethod(string $className, string $methodName): ReflectionMethod
     {
-        $key = $className . '::' . $methodName . ':method';
+        $key = $className . '::' . $methodName;
         if (self::notNullHas($key)) {
             return self::notNullGet($key);
         }
         if (self::reflectClass($className)->hasMethod($methodName)) {
-            return self::$storageRoom [$key] = self::reflectClass($className)->getMethod($methodName);
+            return self::$storageRoom [self::$method] [$key] = self::reflectClass($className)->getMethod($methodName);
         }
         throw new InvalidArgumentException(
             sprintf('Class %s does not have method %s', $className, $methodName)
@@ -70,12 +70,11 @@ class ReflectionManager extends AbstractMetadataCollector
      */
     static public function reflectProperty(string $className, string $propertyName): ReflectionProperty
     {
-        $key = $className . '::' . $propertyName . ':property';
+        $key = $className . '::' . $propertyName;
         if (self::notNullHas($key)) {
             return self::notNullGet($key);
         }
-        return self::$storageRoom [$key]
-            = self::reflectClass($className)->getProperty($propertyName);
+        return self::$storageRoom [self::$property] [$key] = self::reflectClass($className)->getProperty($propertyName);
     }
 
     /**

@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Skernl\Di\Definition;
+namespace Skernl\Di\Source;
 
+use Composer\Autoload\ClassLoader;
 use ReflectionException;
-use Skernl\Di\Annotation\ClassAnnotationCollector;
+use Skernl\Di\Definition\DefinitionInterface;
+use Skernl\Di\Definition\DefinitionSourceInterface;
 
 /**
  * @DefinitionSource
@@ -18,30 +20,23 @@ class DefinitionSource implements DefinitionSourceInterface
     private array $source = [];
 
     /**
-     * @var ClassAnnotationCollector $annotationCollector
+     * @param SourceManager $sourceManager
      */
-    private ClassAnnotationCollector $annotationCollector;
-
-    /**
-     * @param array $classMap
-     * @throws ReflectionException
-     */
-    public function __construct()
+    public function __construct(private readonly SourceManager $sourceManager)
     {
-        $this->annotationCollector = new ClassAnnotationCollector();
-        $this->normalize(
-            array_keys($classMap)
-        );
     }
 
     /**
      * @param string $class
      * @param array $parameters
-     * @return mixed
+     * @return DefinitionInterface|null
      */
-    public function getDefinition(string $class, array $parameters = []): DefinitionInterface
+    public function getDefinition(string $class, array $parameters = []): null|DefinitionInterface
     {
-        return $this->source [$class];
+        if (isset($this->source [$class])) {
+            return $this->source [$class];
+        }
+        return $this->source [$class] = $this->sourceManager->getSource($class);
     }
 
     /**
@@ -50,30 +45,6 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function hasDefinition(string $class): bool
     {
-        return isset($this->source [$class]);
-    }
-
-    /**
-     * @param array $source
-     * @param object|null $definitionFactory
-     * @return void
-     * @throws ReflectionException
-     */
-    private function normalize(array $source, null|object $definitionFactory = null): void
-    {
-        if (is_null($definitionFactory)) {
-            $definitionFactory = new DefinitionFactory($this->annotationCollector);
-        }
-
-        $class = array_shift($source);
-        if (!interface_exists($class) && !trait_exists($class)) {
-            $this->source += [
-                $class => $definitionFactory->autoMode($class)
-            ];
-        }
-
-        if (!empty($source)) {
-            $this->normalize($source, $definitionFactory);
-        }
+        return isset($this->source [$class]) || $this->sourceManager->hasSource($class);
     }
 }

@@ -3,108 +3,88 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
+use ReflectionAttribute;
 use ReflectionClass;
-use ReflectionException;
-use ReflectionParameter;
-use Skernl\Di\Annotation\ClassAnnotationCollector;
-use Skernl\Di\Annotation\PropertyAnnotationCollector;
+use Skernl\Di\Collector\ClassCollector;
 
 /**
  * @ObjectDefinition
  * @\Skernl\Di\Definition\ObjectDefinition
  */
-class ObjectDefinition extends DefinitionAbstract implements DefinitionInterface
+class ObjectDefinition implements DefinitionInterface
 {
-    private PropertyAnnotationCollector $propertyInject;
+    /**
+     * @var string $className
+     */
+    private string $className;
 
-    public function __construct(private readonly ClassAnnotationCollector $annotationCollector)
+    /**
+     * @param ReflectionClass $reflectionClass
+     */
+    public function __construct(private readonly ReflectionClass $reflectionClass)
+    {
+        $this->collect();
+    }
+
+    public function getParameters(string $methodName)
     {
     }
 
-    public function init(ReflectionClass $reflectionClass): void
+    /**
+     * @return string
+     */
+    public function getClassName(): string
     {
-        parent::init($reflectionClass);
-        $this->instantiable = $reflectionClass->isInstantiable();
-        $this->setCollect();
+        isset($this->className) || $this->className = $this->reflectionClass->getName();
+        return $this->className;
     }
 
-    protected function setCollect(): void
+    /**
+     * @return void
+     */
+    private function collect(): void
     {
-        //  class
-        $classAttributes = $this->reflectionClass->getAttributes();
-        foreach ($classAttributes as $attribute) {
-            $this->annotationCollector->collectClass(
-                $this->class,
-                $attribute->getName(),
-                $attribute->getArguments()
+        $this->collectClass();
+        $this->collectMethod();
+        $this->collectProperty();
+    }
+
+    /**
+     * @return void
+     */
+    private function collectClass(): void
+    {
+        $attributes = $this->reflectionClass->getAttributes();
+        foreach ($attributes as $attribute) {
+            $arguments = $attribute->getArguments();
+            ClassCollector::collectClass(
+                $this->getClassName(), $arguments
             );
         }
-        //  method
+    }
+
+    private function collectMethod(): void
+    {
         $methods = $this->reflectionClass->getMethods();
         foreach ($methods as $method) {
-            $methodAttributes = $method->getAttributes();
-            foreach ($methodAttributes as $attribute) {
-                $this->annotationCollector->collectMethod(
-                    $this->class,
-                    $method->getName(),
-                    $attribute->getName(),
-                    $attribute->getArguments()
-                );
-            }
+            $arguments = $method->getAttributes();
+            ClassCollector::collectClass(
+                $this->getClassName(), $arguments
+            );
         }
-        //  property
+    }
+
+    /**
+     * @return void
+     */
+    private function collectProperty(): void
+    {
         $properties = $this->reflectionClass->getProperties();
-        $propertyAnnotationCollector = new PropertyAnnotationCollector;
-        $propertyAnnotationCollector->init($properties);
-        $this->propertyInject = $propertyAnnotationCollector;
-    }
-
-    /**
-     * @return ReflectionClass
-     */
-    public function getReflectClass(): ReflectionClass
-    {
-        return $this->reflectionClass;
-    }
-
-//    public function createInstance(ReflectionClass $reflectionClass, array $parameters = [])
-//    {
-//        return $reflectionClass->newInstanceArgs($parameters);
-//    }
-
-    public function createInstance(array $parameters = [])
-    {
-        return $this->reflectionClass->newInstanceArgs($parameters);
-    }
-
-    /**
-     * @return array|PropertyAnnotationCollector
-     */
-    public function getAnnotationProperties(): PropertyAnnotationCollector
-    {
-        return $this->propertyInject;
-//        $annotationProperties = $this->annotationCollector->getAllProperty($this->class);
-//        return $annotationProperties;
-//        $properties = [];
-//        foreach ($annotationProperties as $property) {
-//            $name = $property->getName();
-//            $propertyValue = $this->reflectionClass->getProperty($name);
-//            $properties += [
-//                $name => $propertyValue,
-//            ];
-//        }
-//        return $properties;
-    }
-
-    /**
-     * @return ReflectionParameter[]
-     */
-    public function getConstructParameters(): array
-    {
-        $construct = $this->reflectionClass->getConstructor();
-        if (is_null($construct)) {
-            return [];
+        foreach ($properties as $property) {
+            $arguments = $property->getAttributes();
+            ClassCollector::collectClass(
+                $this->getClassName(), $arguments
+            );
         }
-        return $construct->getParameters();
     }
 }
