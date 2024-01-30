@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Resolver;
 
+use App\Controller\IndexController;
 use Closure;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -11,6 +12,7 @@ use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\ObjectDefinition;
 use Skernl\Di\Exception\InvalidDefinitionException;
+use Skernl\Di\Source\DynamicProxy;
 
 /**
  * @ObjectResolver
@@ -18,8 +20,11 @@ use Skernl\Di\Exception\InvalidDefinitionException;
  */
 class ObjectResolver implements ResolverInterface
 {
+    private ParameterResolver $parameterResolver;
+
     public function __construct(private ContainerInterface $container)
     {
+        $this->parameterResolver = new ParameterResolver();
     }
 
     /**
@@ -30,7 +35,7 @@ class ObjectResolver implements ResolverInterface
      * @throws InvalidDefinitionException
      * @throws NotFoundExceptionInterface
      */
-    public function resolve(DefinitionInterface $definition, array $parameters = []): Closure
+    public function resolve(DefinitionInterface $definition, array $parameters = []): object
     {
         if ($definition instanceof ObjectDefinition) {
             return $this->createInstance($definition);
@@ -55,12 +60,12 @@ class ObjectResolver implements ResolverInterface
 
     /**
      * @param ObjectDefinition $objectDefinition
-     * @return Closure
+     * @return object
      * @throws ContainerExceptionInterface
      * @throws InvalidDefinitionException
      * @throws NotFoundExceptionInterface
      */
-    private function createInstance(ObjectDefinition $objectDefinition): Closure
+    private function createInstance(ObjectDefinition $objectDefinition): object
     {
         if (!$objectDefinition->isInstantiable()) {
             throw new InvalidDefinitionException(
@@ -70,25 +75,21 @@ class ObjectResolver implements ResolverInterface
                 )
             );
         }
-
         $params = [];
-        foreach ($objectDefinition->getConstructParameters() as $parameter) {
+        foreach ($objectDefinition->getParameters('__construct') as $parameter) {
             $params [] = $this->getDefaultParameter($parameter);
         }
-
         $class = $objectDefinition->getClassName();
-
         $instance = new $class(... $params);
-
         /**
+         * @use $instance
          * @var DynamicProxy|Closure $classObject
          */
         $classObject = eval(<<<EOF
-            return new class () extends {$objectDefinition->getClassName()} {
-                use DynamicProxy;
+            return new class (\$instance) extends {$objectDefinition->getClassName()} {
+                use Skernl\Di\Source\DynamicProxy;
             };
         EOF);
-        $classObject->__initialization($instance);
         /**
          * @var Closure $classObject
          */

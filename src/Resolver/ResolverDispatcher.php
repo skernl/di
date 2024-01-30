@@ -45,11 +45,6 @@ class ResolverDispatcher
      */
     public function resolve(DefinitionInterface $definition, array $parameters = []): mixed
     {
-        if ($definition instanceof ObjectDefinition) {
-            return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
-        } elseif ($definition instanceof InterfaceDefinition) {
-            return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
-        }
         return $this->getDefinitionResolver($definition)->resolve($definition, $parameters);
     }
 
@@ -60,7 +55,7 @@ class ResolverDispatcher
     private function getDefinitionResolver(DefinitionInterface $definition): ResolverInterface
     {
         if ($definition instanceof ObjectDefinition) {
-            return $this->objectResolver ??= new ObjectResolver($this->container, $this);
+            return $this->objectResolver ??= new ObjectResolver($this->container);
         }
         throw new RuntimeException(
             sprintf(

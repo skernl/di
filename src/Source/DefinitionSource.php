@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Source;
 
-use Composer\Autoload\ClassLoader;
-use ReflectionException;
 use Skernl\Di\Definition\DefinitionInterface;
 use Skernl\Di\Definition\DefinitionSourceInterface;
 
@@ -14,10 +12,19 @@ use Skernl\Di\Definition\DefinitionSourceInterface;
  */
 class DefinitionSource implements DefinitionSourceInterface
 {
-    /**
-     * @var array $source
-     */
-    private array $source = [];
+    private array $bond = [];
+
+    private SourceManager $sourceManager;
+
+    public function __construct()
+    {
+        $this->sourceManager = new SourceManager();
+    }
+
+    public function patch(string $name, $entry): void
+    {
+        $this->bond [$name] = $entry;
+    }
 
     /**
      * @param string $class
@@ -26,10 +33,11 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function getDefinition(string $class, array $parameters = []): null|DefinitionInterface
     {
-        if (isset($this->source [$class])) {
-            return $this->source [$class];
+        $definition = $this->bond [$class] ?? $this->sourceManager->getSource($class);
+        if (is_string($definition)) {
+            return $this->getDefinition($definition);
         }
-        return $this->source [$class] = SourceManager::getSource($class);
+        return $this->bond [$class] = $definition;
     }
 
     /**
@@ -38,6 +46,15 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function hasDefinition(string $class): bool
     {
-        return isset($this->source [$class]) || SourceManager::hasSource($class);
+        return isset($this->bond [$class]) || $this->sourceManager->hasSource($class);
+    }
+
+    /**
+     * @return $this
+     */
+    public function __invoke(): static
+    {
+        new ContainerCompensator($this);
+        return $this;
     }
 }

@@ -7,6 +7,10 @@ use Composer\Autoload\ClassLoader;
 use ReflectionClass;
 use ReflectionException;
 use Skernl\Di\Definition\DefinitionInterface;
+use Skernl\Di\Definition\EnumDefinition;
+use Skernl\Di\Definition\InterfaceDefinition;
+use Skernl\Di\Definition\ObjectDefinition;
+use Skernl\Di\Definition\TraitDefinition;
 
 /**
  * @SourceManager
@@ -17,38 +21,51 @@ class SourceManager
     /**
      * @var array $source
      */
-    static private array $source = [];
+    private array $source = [];
+
+    /**
+     * @var ClassLoader $classLoader
+     */
+    private ClassLoader $classLoader;
 
     /**
      * @throws ReflectionException
      */
-    static public function init(): void
+    public function __construct()
+    {
+        $this->composerInit();
+        $this->normalize(
+            array_keys(
+                $this->classLoader->getClassMap()
+            )
+        );
+    }
+
+    private function composerInit(): void
     {
         $loaders = ClassLoader::getRegisteredLoaders();
         /**
          * @var ClassLoader $classLoader
          */
-        $classLoader = reset($loaders);
-        $classMap = $classLoader->getClassMap();
-        self::normalize(array_keys($classMap));
+        $this->classLoader = reset($loaders);
     }
 
     /**
      * @param string $class
-     * @return ReflectionClass|null
+     * @return DefinitionInterface|null
      */
-    static public function getSource(string $class): DefinitionInterface|null
+    public function getSource(string $class): DefinitionInterface|null
     {
-        return self::$source [$class] ?: null;
+        return $this->source [$class] ?? null;
     }
 
     /**
      * @param string $class
      * @return bool
      */
-    static public function hasSource(string $class): bool
+    public function hasSource(string $class): bool
     {
-        return isset(self::$source [$class]);
+        return isset($this->source [$class]);
     }
 
     /**
@@ -56,31 +73,26 @@ class SourceManager
      * @return void
      * @throws ReflectionException
      */
-    static private function normalize(array $source = []): void
+    private function normalize(array $source = []): void
     {
-
         $class = array_shift($source);
-
-        if (class_exists($class) || enum_exists($class) || interface_exists($class) || trait_exists($class)) {
-            self::$source [$class] = new ReflectionClass($class);
+        if (class_exists($class)) {
+            $this->source [$class] = new ObjectDefinition(
+                new ReflectionClass($class)
+            );
+        } elseif (enum_exists($class)) {
+            $this->source [$class] = new EnumDefinition(
+                new ReflectionClass($class)
+            );
+        } elseif (interface_exists($class)) {
+            $this->source [$class] = new InterfaceDefinition(
+                new ReflectionClass($class)
+            );
+        } elseif (trait_exists($class)) {
+            $this->source [$class] = new TraitDefinition(
+                new ReflectionClass($class)
+            );
         }
-
-//        if (class_exists($class)) {
-//            self::$source [$class] = new ObjectDefinition(
-//                new ReflectionClass($class),
-//                $this->getContainer()
-//            );
-//        } elseif (enum_exists($class)) {
-//            self::$source [$class] = new EnumDefinition(
-//                new ReflectionClass($class)
-//            );
-//        } elseif (interface_exists($class)) {
-//            self::$source [$class] = new InterfaceDefinition($class);
-//        } elseif (trait_exists($class)) {
-//            self::$source [$class] = new TraitDefinition(
-//                new ReflectionClass($class)
-//            );
-//        }
         empty($source) || self::normalize($source);
     }
 }

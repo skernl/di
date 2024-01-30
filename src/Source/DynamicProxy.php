@@ -25,15 +25,11 @@ trait DynamicProxy
     static private object $instance;
 
     /**
-     * @param ContainerInterface $container
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @param object $object
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(object $object)
     {
-        self::$instance = $container->get(
-            get_parent_class($this)
-        );
+        self::$instance = $object;
     }
 
     public function __destruct()

@@ -13,22 +13,15 @@ use ReflectionException;
 class InterfaceDefinition implements DefinitionInterface
 {
     /**
-     * @var ReflectionClass $reflectionClass
-     */
-    private readonly ReflectionClass $reflectionClass;
-
-    /**
      * @var bool $instantiable
      */
     private bool $instantiable = false;
 
     /**
-     * @param string $class
-     * @throws ReflectionException
+     * @param ReflectionClass $reflectionClass
      */
-    public function __construct(string $class)
+    public function __construct(private readonly ReflectionClass $reflectionClass)
     {
-        $this->reflectionClass = new ReflectionClass($class);
     }
 
     public function isInstantiable()

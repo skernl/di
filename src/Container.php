@@ -69,6 +69,10 @@ class Container implements SkernlContainerInterface
 
         $definition = $this->definitionSource->getDefinition($id);
 
+        if (is_string($definition)) {
+            $definition = $this->definitionSource->getDefinition($definition);
+        }
+
         if (!$this->resolverDispatcher->isResolvable($definition)) {
             throw new InvalidDefinitionException(
                 sprintf(

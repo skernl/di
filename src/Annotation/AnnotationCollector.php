@@ -12,11 +12,6 @@ use Skernl\Di\Collector\AbstractMetadataCollector;
 class AnnotationCollector extends AbstractMetadataCollector
 {
     /**
-     * @var array $retailer
-     */
-    static protected array $storageRoom = [];
-
-    /**
      * @param string $class
      * @param string $annotation
      * @param mixed $value
