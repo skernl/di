@@ -30,6 +30,5 @@ class SourceCompensator
 
     private function collector()
     {
-        $this->metadataCollect = new
     }
 }

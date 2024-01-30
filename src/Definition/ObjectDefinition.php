@@ -7,6 +7,8 @@ use ReflectionAttribute;
 use ReflectionClass;
 use Skernl\Contract\ContainerInterface;
 use Skernl\Di\Collector\ClassCollector;
+use Skernl\Di\Collector\MethodCollector;
+use Skernl\Di\Collector\PropertyCollector;
 
 /**
  * @ObjectDefinition
@@ -58,17 +60,12 @@ class ObjectDefinition implements DefinitionInterface
     {
         $attributes = $this->reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
-            $this->
-            var_dump($attribute->getName());
             $arguments = $attribute->getArguments();
-            var_dump($arguments);
-            ClassCollector::collectClass(
-                $this->getClassName(), $arguments
+            ClassCollector::collect(
+                $this->getClassName(),
+                $attribute->getName(),
+                $arguments
             );
-        }
-        if (!empty($attributes)) {
-
-            die;
         }
     }
 
@@ -76,10 +73,16 @@ class ObjectDefinition implements DefinitionInterface
     {
         $methods = $this->reflectionClass->getMethods();
         foreach ($methods as $method) {
-            $arguments = $method->getAttributes();
-            ClassCollector::collectClass(
-                $this->getClassName(), $arguments
-            );
+            $attributes = $method->getAttributes();
+            foreach ($attributes as $attribute) {
+                $arguments = $attribute->getArguments();
+                MethodCollector::collect(
+                    $this->getClassName(),
+                    $method->getName(),
+                    $attribute->getName(),
+                    $arguments
+                );
+            }
         }
     }
 
@@ -90,10 +93,16 @@ class ObjectDefinition implements DefinitionInterface
     {
         $properties = $this->reflectionClass->getProperties();
         foreach ($properties as $property) {
-            $arguments = $property->getAttributes();
-            ClassCollector::collectClass(
-                $this->getClassName(), $arguments
-            );
+            $attributes = $property->getAttributes();
+            foreach ($attributes as $attribute) {
+                $arguments = $attribute->getArguments();
+                PropertyCollector::collect(
+                    $this->getClassName(),
+                    $property->getName(),
+                    $attribute->getName(),
+                    $arguments
+                );
+            }
         }
     }
 }

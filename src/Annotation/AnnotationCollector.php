@@ -28,14 +28,6 @@ class AnnotationCollector extends AbstractMetadataCollector
         mixed  $value
     ): void
     {
-        self::$storageRoom [$annotation] [$class] = $value;
-    }
-
-    static public function list(null|string $annotation = null): array
-    {
-        if (null === $annotation) {
-            return self::$storageRoom;
-        }
-        return self::$storageRoom [$annotation] ?: [];
+        self::$storageRoom [self::$annotation] [$annotation] [$class] = $value;
     }
 }

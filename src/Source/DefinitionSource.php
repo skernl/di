@@ -20,13 +20,6 @@ class DefinitionSource implements DefinitionSourceInterface
     private array $source = [];
 
     /**
-     * @param SourceManager $sourceManager
-     */
-    public function __construct(private readonly SourceManager $sourceManager)
-    {
-    }
-
-    /**
      * @param string $class
      * @param array $parameters
      * @return DefinitionInterface|null
@@ -36,7 +29,7 @@ class DefinitionSource implements DefinitionSourceInterface
         if (isset($this->source [$class])) {
             return $this->source [$class];
         }
-        return $this->source [$class] = $this->sourceManager->getSource($class);
+        return $this->source [$class] = SourceManager::getSource($class);
     }
 
     /**
@@ -45,6 +38,6 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function hasDefinition(string $class): bool
     {
-        return isset($this->source [$class]) || $this->sourceManager->hasSource($class);
+        return isset($this->source [$class]) || SourceManager::hasSource($class);
     }
 }
