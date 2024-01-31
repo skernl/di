@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Skernl\Di\Contract;
+namespace Skernl\Container\Contract;
 
 use ReflectionClass;
 
