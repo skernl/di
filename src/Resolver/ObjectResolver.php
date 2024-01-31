@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Resolver;
 
-use App\Controller\IndexController;
 use Closure;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -24,7 +23,7 @@ class ObjectResolver implements ResolverInterface
 
     public function __construct(private ContainerInterface $container)
     {
-        $this->parameterResolver = new ParameterResolver();
+        $this->parameterResolver = new ParameterResolver($this->container);
     }
 
     /**
@@ -42,8 +41,9 @@ class ObjectResolver implements ResolverInterface
         }
         throw new InvalidDefinitionException(
             sprintf(
-                'Entry "%s" cannot be resolved: the class is not instanceof ObjectDefinition',
-                $definition->getClassName()
+                'Entry "%s" cannot be resolved: the class is not instanceof %s',
+                $definition->getClassName(),
+                'Skernl\Di\Definition\ObjectDefinition'
             )
         );
     }
@@ -75,12 +75,14 @@ class ObjectResolver implements ResolverInterface
                 )
             );
         }
-        $params = [];
-        foreach ($objectDefinition->getParameters('__construct') as $parameter) {
-            $params [] = $this->getDefaultParameter($parameter);
-        }
+        $params = $this->parameterResolver->resolveParameters($objectDefinition);
+        $params = $this->getDefaultParameter($objectDefinition);
         $class = $objectDefinition->getClassName();
         $instance = new $class(... $params);
+
+        var_dump($class);
+        var_dump($params);
+        var_dump($instance);
         /**
          * @use $instance
          * @var DynamicProxy|Closure $classObject
@@ -97,13 +99,15 @@ class ObjectResolver implements ResolverInterface
     }
 
     /**
-     * @param ReflectionParameter $parameter
+     * @param DefinitionInterface $definition
      * @return object
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    private function getDefaultParameter(ReflectionParameter $parameter): object
+    private function getDefaultParameter(DefinitionInterface $definition): object
     {
+        $parameters = $definition->getMethodParameters('__construct');
+        $this->parameterResolver->resolve();
         $type = $parameter->getType();
         return $this->container->get($type->getName());
     }

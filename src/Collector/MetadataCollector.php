@@ -14,7 +14,7 @@ class MetadataCollector extends AbstractMetadataCollector
         return self::$storageRoom [self::$annotation] [$annotation] [$class] ?? $default;
     }
 
-    static public function getAnnotations(string $annotation, mixed $default = null): mixed
+    static public function getAnnotations(string $annotation, mixed $default = []): mixed
     {
         return self::$storageRoom [self::$annotation] [$annotation] ?? $default;
     }

@@ -4,12 +4,10 @@ declare(strict_types=1);
 namespace Skernl\Di\Source;
 
 use Composer\Autoload\ClassLoader;
-use Psr\Container\ContainerInterface;
-use ReflectionException;
-use Skernl\Di\Definition\{
-    DefinitionSourceInterface,
-    ObjectDefinition,
-};
+use ReflectionAttribute;
+use ReflectionClass;
+use Skernl\Di\Collector\ClassCollector;
+use Skernl\Di\Definition\ObjectDefinition;
 
 /**
  * @ClassesCollectorManager
@@ -17,74 +15,61 @@ use Skernl\Di\Definition\{
  */
 class ClassesManager
 {
-    /**
-     * @var DefinitionSourceInterface $definitionSource
-     */
-    private DefinitionSourceInterface $definitionSource;
+    static private ClassLoader $classLoader;
 
-    /**
-     * @var ContainerInterface $container
-     */
-    private ContainerInterface $container;
+    static protected array $storageRoom = [];
 
-    private array $classMap = [];
+    static protected array $annotation = [];
 
-    /**
-     * @param ClassLoader $classLoader
-     * @throws ReflectionException
-     */
-    public function __construct(ClassLoader $classLoader)
+    static public function init(): void
     {
-        $classMap = $classLoader->getClassMap();
-        $classLoader->unregister();
-        $this->initialization($classMap);
+        self::loadClassMap();
+        self::mountClassMap(
+            array_keys(
+                self::$classLoader->getClassMap()
+            )
+        );
     }
 
-    /**
-     * @return ContainerInterface
-     */
-    public function getContainer(): ContainerInterface
+    static private function loadClassMap(): void
     {
+        $loaders = ClassLoader::getRegisteredLoaders();
         /**
-         * @var ObjectDefinition $definition
+         * @var ClassLoader $classLoader
          */
-        return new Container($this->definitionSource);
+        self::$classLoader = reset($loaders);
+        self::mountClassMap(
+            array_keys(
+                self::$classLoader->getClassMap()
+            )
+        );
     }
 
     /**
      * @param array $classMap
      * @return void
-     * @throws ReflectionException
      */
-    private function initialization(array $classMap): void
+    static private function mountClassMap(array $classMap): void
     {
-        spl_autoload_register([$this, 'register']);
-        foreach ($classMap as $file) {
-            include_once $file;
+        $class = array_shift($classMap);
+        if (class_exists($class)) {
+            $collector = new ObjectDefinition(
+                new ReflectionClass($class)
+            );
+            self::$storageRoom [$class] = $collector;
+            empty($classAnnotations = $collector->getClassAnnotations())
+            || self::mountClassAnnotations($class, $classAnnotations);
         }
-        spl_autoload_register([$this, 'register']);
-        var_dump(spl_autoload_functions());
-//        $this->definitionSource = new DefinitionSource($classMap);
-//        $this->container = new Container($this->definitionSource);
-//        $this->clean($classMap);
+        empty($classMap) || self::mountClassMap($classMap);
     }
 
-    private function register()
+    static private function mountClassAnnotations(string $class, array $classAnnotations): void
     {
-    }
-
-    /**
-     * @return void
-     */
-    private function clean(array $classMap): void
-    {
-        foreach (array_keys($classMap) as $function) {
-            if (!interface_exists($function) && !trait_exists($function)) {
-                spl_autoload_unregister($function);
-            }
+        /**
+         * @var ReflectionAttribute $annotation
+         */
+        foreach ($classAnnotations as $annotation) {
+            self::$annotation [$annotation->getName()] [$class] = $annotation->getArguments();
         }
-//        array_map(fn($class) => 'spl_autoload_unregister', spl_autoload_functions());
-        var_dump(class_exists(App\Controller\IndexController::class));
-        spl_autoload_register([$this->definitionSource, 'getDefinition'], true, false);
     }
 }

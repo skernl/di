@@ -3,24 +3,21 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Resolver;
 
-use Skernl\Di\Definition\DefinitionInterface;
+use Psr\Container\ContainerInterface;
+use Skernl\Di\Definition\ObjectDefinition;
 
 /**
  * @ParameterResolver
  * @\Skernl\Di\Resolver\ParameterResolver
  */
-class ParameterResolver implements ResolverInterface
+class ParameterResolver
 {
-    public function resolve(DefinitionInterface $definition, array $parameters = []): mixed
+    public function __construct(private ContainerInterface $container)
     {
     }
 
-    /**
-     * @param DefinitionInterface $definition
-     * @param array $parameters
-     * @return bool
-     */
-    public function isResolvable(DefinitionInterface $definition, array $parameters = []): bool
+    public function resolveParameters(ObjectDefinition $objectDefinition)
     {
+        $parameters = $objectDefinition->getMethodParameters();
     }
 }

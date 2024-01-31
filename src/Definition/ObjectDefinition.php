@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace Skernl\Di\Definition;
 
+use ReflectionAttribute;
 use ReflectionClass;
-use Skernl\Di\Annotation\AnnotationCollector;
-use Skernl\Di\Collector\ClassCollector;
-use Skernl\Di\Collector\MethodCollector;
-use Skernl\Di\Collector\PropertyCollector;
+use ReflectionException;
+use ReflectionParameter;
 use Skernl\Di\Exception\InvalidDefinitionException;
 
 /**
@@ -18,43 +17,16 @@ class ObjectDefinition implements DefinitionInterface
 {
     private string $className;
 
-    private bool $instantiable;
+    protected bool $instantiable;
 
-    private array $methodParameters = [];
-
-    /**
-     * @param ReflectionClass $reflectionClass
-     */
-    public function __construct(private readonly ReflectionClass $reflectionClass)
+    public function __construct(protected ReflectionClass $reflectionClass)
     {
+        $this->className = $this->reflectionClass->getName();
         $this->instantiable = $this->reflectionClass->isInstantiable();
-        $this->collect();
     }
 
-    public function getParameters(string $method)
-    {
-        if (!$this->reflectionClass->hasMethod($method)) {
-            throw new InvalidDefinitionException(
-                sprintf(
-                    'Entry "%s" cannot be resolved: class %s does not have method %s',
-                    $this->getClassName(),
-                    $this->getClassName(),
-                    $method
-                )
-            );
-        }
-        if (isset($this->methodParameters [$method])) {
-            return $this->methodParameters [$method];
-        }
-        return $this->methodParameters [$method] = $this->reflectionClass->getMethod($method)->getParameters();
-    }
-
-    /**
-     * @return string
-     */
     public function getClassName(): string
     {
-        isset($this->className) || $this->className = $this->reflectionClass->getName();
         return $this->className;
     }
 
@@ -64,70 +36,57 @@ class ObjectDefinition implements DefinitionInterface
     }
 
     /**
-     * @return void
+     * @return ReflectionAttribute[]
      */
-    private function collect(): void
+    public function getClassAnnotations(): array
     {
-        $this->collectClass();
-        $this->collectMethod();
-        $this->collectProperty();
+        return $this->reflectionClass->getAttributes();
     }
 
+//    public function getProperties(): array
+//    {
+//        // TODO: Implement getProperties() method.
+//    }
+//
     /**
-     * @return void
+     * @param string $method
+     * @return ReflectionParameter[]
+     * @throws InvalidDefinitionException
      */
-    private function collectClass(): void
+    public function getMethodParameters(string $method): array
     {
-        $attributes = $this->reflectionClass->getAttributes();
-        foreach ($attributes as $attribute) {
-            $arguments = $attribute->getArguments();
-            AnnotationCollector::collect(
-                $attribute->getName(),
-                $this->getClassName(),
-                $arguments
-            );
-            ClassCollector::collect(
-                $this->getClassName(),
-                $attribute->getName(),
-                $arguments
-            );
-        }
-    }
-
-    private function collectMethod(): void
-    {
-        $methods = $this->reflectionClass->getMethods();
-        foreach ($methods as $method) {
-            $attributes = $method->getAttributes();
-            foreach ($attributes as $attribute) {
-                $arguments = $attribute->getArguments();
-                MethodCollector::collect(
+        try {
+            return $this->reflectionClass->getMethod($method)->getParameters();
+        } catch (ReflectionException) {
+            throw new InvalidDefinitionException(
+                sprintf(
+                    'Method %s does not exist in Class %s',
+                    '__construct',
                     $this->getClassName(),
-                    $method->getName(),
-                    $attribute->getName(),
-                    $arguments
-                );
-            }
+                )
+            );
         }
     }
 
     /**
-     * @return void
+     * @param string $method
+     * @return array
+     * @throws InvalidDefinitionException
      */
-    private function collectProperty(): void
+    public function getMethodDefaultParameters(string $method): array
     {
-        $properties = $this->reflectionClass->getProperties();
-        foreach ($properties as $property) {
-            $attributes = $property->getAttributes();
-            foreach ($attributes as $attribute) {
-                $arguments = $attribute->getArguments();
-                PropertyCollector::collect(
-                    $this->getClassName(),
-                    $property->getName(),
-                    $attribute->getName(),
-                    $arguments
-                );
+        $params = [];
+        foreach ($this->getMethodParameters($method) as $parameter) {
+            if ($parameter->isDefaultValueAvailable()) {
+                $params [$parameter->getName()] = $parameter->getDefaultValue();
             }
         }
+
+        return $params;
+    }
+
+    public function hasMethod(string $method): bool
+    {
+        return $this->reflectionClass->hasMethod($method);
     }
 }

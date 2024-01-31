@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace Skernl\Di;
 
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Skernl\Contract\ContainerInterface as SkernlContainerInterface;
+use Skernl\Di\Annotation\AnnotationTrigger;
+use Skernl\Di\Annotation\Mount;
 use Skernl\Di\Exception\InvalidDefinitionException;
 use Skernl\Di\Exception\NotFoundException;
 use Skernl\Di\Resolver\ResolverDispatcher;
@@ -16,6 +19,7 @@ use Skernl\Di\Source\DefinitionSource;
  * @Container
  * @\Skernl\Di\Container
  */
+#[AnnotationTrigger(Mount::class)]
 class Container implements SkernlContainerInterface
 {
     /**
@@ -69,10 +73,6 @@ class Container implements SkernlContainerInterface
 
         $definition = $this->definitionSource->getDefinition($id);
 
-        if (is_string($definition)) {
-            $definition = $this->definitionSource->getDefinition($definition);
-        }
-
         if (!$this->resolverDispatcher->isResolvable($definition)) {
             throw new InvalidDefinitionException(
                 sprintf(
@@ -103,5 +103,16 @@ class Container implements SkernlContainerInterface
         }
 
         return $this->definitionSource->hasDefinition($id);
+    }
+
+    /**
+     * @return Container
+     * @throws InvalidDefinitionException
+     */
+    public function __invoke(): static
+    {
+        $definition = $this->definitionSource->getDefinition(self::class);
+        $this->resolverDispatcher->resolve($definition);
+        return $this;
     }
 }

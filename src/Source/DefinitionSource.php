@@ -10,15 +10,12 @@ use Skernl\Di\Definition\DefinitionSourceInterface;
  * @DefinitionSource
  * @\Skernl\Di\Definition\DefinitionSource
  */
-class DefinitionSource implements DefinitionSourceInterface
+class DefinitionSource extends ClassesManager implements DefinitionSourceInterface
 {
     private array $bond = [];
 
-    private SourceManager $sourceManager;
-
     public function __construct()
     {
-        $this->sourceManager = new SourceManager();
     }
 
     public function patch(string $name, $entry): void
@@ -33,7 +30,7 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function getDefinition(string $class, array $parameters = []): null|DefinitionInterface
     {
-        $definition = $this->bond [$class] ?? $this->sourceManager->getSource($class);
+        $definition = $this->bond [$class] ?? self::$storageRoom [$class];
         if (is_string($definition)) {
             return $this->getDefinition($definition);
         }
@@ -46,15 +43,6 @@ class DefinitionSource implements DefinitionSourceInterface
      */
     public function hasDefinition(string $class): bool
     {
-        return isset($this->bond [$class]) || $this->sourceManager->hasSource($class);
-    }
-
-    /**
-     * @return $this
-     */
-    public function __invoke(): static
-    {
-        new ContainerCompensator($this);
-        return $this;
+        return isset($this->bond [$class]) || !is_null($this->getDefinition($class));
     }
 }
