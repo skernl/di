@@ -3,30 +3,29 @@ declare(strict_types=1);
 
 namespace Skernl\Di;
 
+use Psr\Container\ContainerInterface;
+use Skernl\Container\Composer;
 use Skernl\Di\Contract\DependencyInjectionInterface;
 
 /**
  * @DependencyInjection
  * @\Skernl\Di\DependencyInjection
  */
-class DependencyInjection implements DependencyInjectionInterface
+readonly class DependencyInjection implements DependencyInjectionInterface
 {
-    public function __construct(
-//        private ContainerInterface $container
-    )
+    public function __construct(private readonly ContainerInterface $container)
     {
-        var_dump(class_exists(\App\Controller\IndexController::class));
+    }
+
+    public function beforeAnnotation(string $class)
+    {
+        $annotation = Composer::getAnnotation($class);
+        var_dump($annotation);
     }
 
     public function register()
     {
-        var_dump(class_exists(\App\Controller\IndexController::class));
-        new class
-        {
-            public function __construct ()
-            {
-                var_dump(class_exists(\App\Controller\IndexController::class));
-            }
-        };
+        $this->beforeAnnotation(\Skernl\Container\Container::class);
+//        return $this->container->get(ContainerInterface::class);
     }
 }
