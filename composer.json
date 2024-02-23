@@ -1,6 +1,5 @@
 {
     "name": "skernl/di",
-    "version": "v0.0.3",
     "type": "library",
     "keywords": [
         "php",
